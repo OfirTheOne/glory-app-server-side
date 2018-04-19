@@ -4,11 +4,11 @@
 #### /users 
 ```
 
-- POST:   .../c         --> sign up / sign in route, expect a body with email amd password, 
+- POST:   .../c         --> signup / signin route, expect a body with email amd password, 
                             if successful return 200 and the new user
-- POST:   .../g         --> sign up / sign in route, using google auth system. 
+- POST:   .../g         --> signup / signin route, using google auth system. 
                             expect a body idToken field, if successful return 200 and the new user and it's google id.
-- POST:   .../f         --> sign up / sign in route, using facebook auth system.
+- POST:   .../f         --> signup / signin route, using facebook auth system.
                             in dev-mode.                            
 - GET:    .../me        --> [must be authenticate] get user route, expect a vaild token, 
                             if successful return 200 and the logged user.
@@ -41,7 +41,7 @@
 #### User model :
 * email - regular email filed.
 * password - regular password filed (will be only whan user provider = 'custom').
-* provider - stands for the auth system the user signup with. can be one of the values: 'costum', 'google', 'facebook'.
+* provider - stands for the auth system the user signup with. can be 'costum' / 'google' / 'facebook'.
 * roll - the roll of the user, standard/admin.
 * tokens - array of authentication tokens given to the user.
 * cartId - the user shopping cart id.
