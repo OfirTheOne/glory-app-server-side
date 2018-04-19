@@ -10,7 +10,7 @@ const _ = require('lodash');
 let { UserSchema, UserPersonalDataSchema, USER_PROVIDERS } = require('./user.schema');
 
 const { google_config } = require('../../config/config.json');
-
+console.log(google_config);
 // validate custom jwt related config variable 
 const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
 const jwtAmountPerIP = 5; // amount of tokens that can be generate per ip
