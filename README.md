@@ -3,13 +3,16 @@
 
 #### /users 
 ```
-- POST:   .../          --> sign up route, expext a body with email amd password, 
+
+- POST:   .../c         --> sign up / sign in route, expect a body with email amd password, 
                             if successful return 200 and the new user
-- POST:   .../login     --> log in route, expext a body with email amd password,  
-                            if successful return 200 and token.
+- POST:   .../g         --> sign up / sign in route, using google auth system. 
+                            expect a body idToken field, if successful return 200 and the new user and it's google id.
+- POST:   .../f         --> sign up / sign in route, using facebook auth system.
+                            in dev-mode.                            
 - GET:    .../me        --> [must be authenticate] get user route, expect a vaild token, 
                             if successful return 200 and the logged user.
-- DELETE: .../me/token  --> [must be authenticate] sign out route, expext a vaild token and deleting it, 
+- DELETE: .../me/token  --> [must be authenticate] sign out route, expect a vaild token and deleting it, 
                             if successful return 200.
 ```
 #### /users/cart 
@@ -37,12 +40,12 @@
 
 #### User model :
 * email - regular email filed.
-* password - regular password filed.
+* password - regular password filed (will be only whan user provider = 'custom').
+* provider - stands for the auth system the user signup with. can be one of the values: 'costum', 'google', 'facebook'.
 * roll - the roll of the user, standard/admin.
 * tokens - array of authentication tokens given to the user.
 * cartId - the user shopping cart id.
 * wishList - array of the products id the user added to his wish list.
-
 
 
 #### Product model :
@@ -57,7 +60,6 @@
 * season - ..
 * brand - ..
 * ImagePath - path / url for the product image.
-
 
 
 #### Cart model :
