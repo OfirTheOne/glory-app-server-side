@@ -223,6 +223,7 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
 
 
 UserSchema.statics.findUserByEmail = async function (email) {
+    console.log(email);
     const User = this;
     const user = await User.findOne({ email });
 

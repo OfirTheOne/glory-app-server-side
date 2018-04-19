@@ -93,7 +93,7 @@ usersRoute.post('/g', async (req, res) => {
     let user;
 
     try {
-        user = User.findUserByEmail(email);
+        user = await User.findUserByEmail(email);
     } catch (e) {
         // there is no user with that email
         console.log(e);

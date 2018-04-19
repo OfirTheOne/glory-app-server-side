@@ -3,7 +3,6 @@ const { User } = require('../models/user/user.model');
 const authenticate = async (req, res, next) => {
     const token = req.header('x-auth');
     const provider = req.body.provider;
-s
     try {
         const user = await User.findByToken(token, provider);
 
