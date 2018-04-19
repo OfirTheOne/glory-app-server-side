@@ -1,6 +1,5 @@
 
 const usersRoute = require('express').Router();
-const { OAuth2Client } = require('google-auth-library');
 const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 
@@ -11,11 +10,11 @@ const { Cart } = require('../../models/cart/cart.model');
 // middleware
 const { authenticate } = require('../../middleware/authenticate');
 
-// sub-route '/cart' of '/users' 
-const { cartRoute } = require('./cart/cart.route');
-const { wishRoute } = require('./wish/wish.route');
+// sub-routes
+const { cartRoute } = require('./cart/cart.route'); // sub-route '/cart' of '/users' 
+const { wishRoute } = require('./wish/wish.route'); // sub-route '/wish' of '/users' 
 usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' route
-usersRoute.use('/wish', wishRoute); // connecting the '/cart' route to '/user' route
+usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
 
 
 // NOT IN USE
@@ -70,7 +69,6 @@ usersRoute.post('/f', async (req, res) => {
 usersRoute.post('/g', async (req, res) => {
 
     const idToken = req.body['idToken'];
-    const client = new OAuth2Client(google_config.CLIENT_ID);
     const provider = 'google';
 
     // **** 1 **** - verifing the idToken
