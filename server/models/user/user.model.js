@@ -9,8 +9,6 @@ const _ = require('lodash');
 
 let { UserSchema, UserPersonalDataSchema, USER_PROVIDERS } = require('./user.schema');
 
-const { google_config } = require('../../config/config.json');
-console.log(google_config);
 // validate custom jwt related config variable 
 const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
 const jwtAmountPerIP = 5; // amount of tokens that can be generate per ip
@@ -206,12 +204,12 @@ UserSchema.statics.verifyCustomToken = async function (token) {
 };
 
 UserSchema.statics.verifyGoogleToken = async function (token) {
-    const client = new OAuth2Client(google_config.CLIENT_ID);
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID );
     let ticket;
     try {
         ticket = await client.verifyIdToken({
             idToken: token,
-            audience: google_config.CLIENT_ID
+            audience: process.env.GOOGLE_CLIENT_ID 
         });
         return ticket;
     } catch (e) {
