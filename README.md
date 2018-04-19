@@ -4,10 +4,10 @@
 #### /users 
 ```
 
-- POST:   .../c         --> signup / signin route, expect a body with email amd password, 
+- POST:   .../c         --> signup / signin route, expect a body with email and password, 
                             if successful return 200 and the new user
 - POST:   .../g         --> signup / signin route, using google auth system. 
-                            expect a body idToken field, if successful return 200 and the new user and it's google id.
+                            expect a body idToken field, if successful return 200, the new user & it's google id.
 - POST:   .../f         --> signup / signin route, using facebook auth system.
                             in dev-mode.                            
 - GET:    .../me        --> [must be authenticate] get user route, expect a vaild token, 
