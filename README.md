@@ -71,6 +71,19 @@
 
 ## API in depth
 * #### POST /user/c :
-  * expect - body : { email, password, data? }
+  * *expect* - body : { email, password, data? }
              if the request is for signin data = undefinde, if is for signup the data coulde be with value or undefinde.  
-  * return - header : { 'x-auth': token }, body : { data : {signin?, signup?, user, tokenData } }  
+  * *return* - header : { 'x-auth': token }, body : { data : {signin?, signup?, user, tokenData } } 
+  * *description* - 
+  
+* #### POST /user/g :
+  * *expect* - body : { idToken }
+             if the request is for signin data = undefinde, if is for signup the data coulde be with value or undefinde.  
+  * *return* - body : { data : {signin?, signup?, user, userId } } 
+  * *description* - 
+  
+  
+* #### POST /user/f :
+  * *expect* -   
+  * *return* -  
+  * *description* - 
