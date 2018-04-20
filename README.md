@@ -4,7 +4,7 @@
 #### /users 
 ```
 
-- [POST:   .../c](#/user/c)         --> signup / signin route, expect a body with email and password, 
+- [POST:   .../c](#userc)         --> signup / signin route, expect a body with email and password, 
                             if successful return 200 and the new user
 - [POST:   .../g]()         --> signup / signin route, using google auth system. 
                             expect a body idToken field, if successful return 200, the new user & it's google id.
