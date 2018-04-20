@@ -4,9 +4,9 @@
 #### /users 
 ```
 
-- POST:   .../c         --> signup / signin route, expect a body with email and password, 
+- [POST:   .../c](#/user/c)         --> signup / signin route, expect a body with email and password, 
                             if successful return 200 and the new user
-- POST:   .../g         --> signup / signin route, using google auth system. 
+- [POST:   .../g]()         --> signup / signin route, using google auth system. 
                             expect a body idToken field, if successful return 200, the new user & it's google id.
 - POST:   .../f         --> signup / signin route, using facebook auth system.
                             in dev-mode.                            
@@ -65,3 +65,9 @@
 #### Cart model :
 * ownerId - the ObjectID of the user own this cart.
 * contant - array of items, each one represent a product. item contain the fileds productId, insertionDate and the size (measurement of the product added)
+
+
+
+
+## API in depth
+##### /user/c
