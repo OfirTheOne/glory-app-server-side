@@ -9,7 +9,9 @@
 - POST:   .../g         --> signup / signin route, using google auth system. 
                             expect a body idToken field, if successful return 200, the new user & it's google id.
 - POST:   .../f         --> signup / signin route, using facebook auth system.
-                            in dev-mode.                            
+                            in dev-mode.      
+- POST:   .../data      --> [must be authenticate] submit / update user data,
+                            expect a body with user data, if successful return 200.
 - GET:    .../me        --> [must be authenticate] get user route, expect a vaild token, 
                             if successful return 200 and the logged user.
 - DELETE: .../me/token  --> [must be authenticate] sign out route, expect a vaild token and deleting it, 
@@ -35,6 +37,8 @@
 - GET:    .../cat/:category
 - GET:    .../filter/:q
 ```    
+    
+    
     
 ## Main object models 
 
@@ -87,3 +91,8 @@
   * *expect* -   
   * *return* -  
   * *description* - 
+  
+* #### POST /user/data :
+  * *expect* - header : { x-auth : token }, body : { provider, data : { firstName?, lastName?, birthDate?, gender } }.
+  * *return* -  None
+  * *description* - **authenticate route** 
