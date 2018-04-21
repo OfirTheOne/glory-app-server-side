@@ -46,6 +46,7 @@
 * email - regular email filed.
 * password - regular password filed (will be only whan user provider = 'custom').
 * provider - stands for the auth system the user signup with. can be 'costum' / 'google' / 'facebook'.
+* personalData - contains the fields firstName, lastName, birthDate, gender.
 * roll - the roll of the user, standard/admin.
 * tokens - array of authentication tokens given to the user.
 * cartId - the user shopping cart id.
