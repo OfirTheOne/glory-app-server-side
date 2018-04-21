@@ -93,6 +93,6 @@
   * *description* - 
   
 * #### POST /user/data :
-  * *expect* - header : { x-auth : token }, body : { provider, data : { firstName?, lastName?, birthDate?, gender } }.
-  * *return* -  None
-  * *description* - **authenticate route** 
+    * *expect* - header : { x-auth : token }, body : { provider, data : { firstName?, lastName?, birthDate?, gender } }.
+    * *return* -  None
+    * *description* - **authenticate route** 
