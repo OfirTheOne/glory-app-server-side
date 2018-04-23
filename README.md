@@ -81,6 +81,7 @@
     * *return* - header : { 'x-auth': token }, body : { data : {signin?, signup?, user, tokenData } } 
     * *description* - 
   
+  
 * #### POST /user/g :
     * *expect* - body : { idToken }
                  if the request is for signin data = undefinde, if is for signup the data coulde be with value or undefinde.  
@@ -93,7 +94,16 @@
     * *return* -  
     * *description* - 
   
+  
 * #### POST /user/data :
-    * *expect* - header : { x-auth : token }, body : { provider, data : { firstName?, lastName?, birthDate?, gender } }.
-    * *return* -  None
+    * *expect* - header : { x-auth : token }, body : { provider, userId,  data : { firstName?, lastName?, birthDate?, gender? } }.
+    * *return* - None
     * *description* - **authenticate route** 
+    
+    
+* #### GET /user/me :
+    * *expect* - header : { x-auth : token }, body : { provider }.
+    * *return* - body : { data : { authValue, user : { firstName?, lastName?, birthDate?, gender? } }.
+    * *description* - **authenticate route** .
+    * *notes* - the purpose of authValue is to authenticate the resonse of the server.  
+
