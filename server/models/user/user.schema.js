@@ -20,7 +20,15 @@ const UserPersonalDataSchema = new mongoose.Schema({
         validate: (value) => ['male', 'female'].includes(value)
     }, 
     birthDate : {
-        type: String,
+        day: {
+            type: Number,
+        },
+        month: {
+            type: Number
+        },
+        year: {
+            type: Number
+        }
     }
 
 });
@@ -52,7 +60,7 @@ const UserSchema = new mongoose.Schema({
     wishList: {
         type: [mongoose.Schema.Types.ObjectId]
     },
-    userPersonalData: {
+    personalData: {
         type: UserPersonalDataSchema,
     },
     roll: {

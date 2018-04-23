@@ -4,7 +4,7 @@ const authenticate = async (req, res, next) => {
     const token = req.header('x-auth');
     const provider = req.body.provider;
     try {
-        const user = await User.findByToken(token, provider);
+        const user = await User.findByToken(req, token, provider);
 
         if (!user) {
             throw new Error();
@@ -25,7 +25,6 @@ const authenticate = async (req, res, next) => {
     }
 
 };
-
 
 const authenticateAdmin = async (req, res, next) => {
     const token = req.header('x-auth');

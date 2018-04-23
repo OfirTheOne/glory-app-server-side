@@ -43,7 +43,6 @@ wishRoute.get('/', authenticate, (req, res) => {
     }
 });
 
-
 wishRoute.get('/products', authenticate, async (req, res) => {
     const user = req.user;
 

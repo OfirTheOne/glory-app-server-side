@@ -1,6 +1,7 @@
 
 const usersRoute = require('express').Router();
 const _ = require('lodash');
+const validator = require('validator');
 const { ObjectID } = require('mongodb');
 
 // mongoose models
@@ -17,44 +18,13 @@ usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' r
 usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
 
 
-// NOT IN USE
-/**
- * Route for create new user / signup
- * */
-// POST: /users/ 
-usersRoute.post('/', async (req, res) => {
-
-    // --1-- create new user object. validateion of the req body
-    // is inside the User c'tor     
-    const provider = req.body['provider'];
-
-    const email = req.body['email'];
-
-    const user = new User(_.pick(req.body, ['email', 'password', 'provider']));
-
-    try {
-        await user.save();
-        const ownerId = user._id;
-        const cart = new Cart({ ownerId })
-        await cart.save();
-        const tokenData = await user.generateAuthToken(req);
-        res.header('x-auth', tokenData.token).send({ data: { user, tokenData } });
-    } catch (e) {
-        res.status(400).send(e);
-    }
-
-});
-
-/**
+/** POST: /users/f 
  * Route for signup / signin user with facebook
  * */
-// POST: /users/f
 usersRoute.post('/f', async (req, res) => {
-
 });
 
-
-/**
+/** POST: /users/g 
  * Route for signup / signin user with google
  * expecting in the body : 
  *  {
@@ -65,7 +35,6 @@ usersRoute.post('/f', async (req, res) => {
  *  https://developers.google.com/identity/sign-in/web/backend-auth
  *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
  * */
-// POST: /users/g
 usersRoute.post('/g', async (req, res) => {
 
     const idToken = req.body['idToken'];
@@ -111,11 +80,17 @@ usersRoute.post('/g', async (req, res) => {
 
         try {
             await user.addToken(idToken);
-            res.status(200).send({ data: { userId: payload['sub']} });
+            res.status(200).send({
+                data: {
+                    signup: false,
+                    userId: payload['sub'],
+                    user
+                }
+            });
         } catch (e) {
             console.log(e);
         }
-    } 
+    }
     else { // SIGN-UP
         // if the user dont exists in the db 
         user = new User({ email, provider })
@@ -127,24 +102,29 @@ usersRoute.post('/g', async (req, res) => {
                 lastName: payload['family_name'],
                 fisrtName: payload['given_name']
 
-            }) 
+            })
 
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
             await cart.save();
-
+            await user.addToken(idToken);
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
-            res.status(200).send({ data: { userId: payload['sub'], user} });
+            res.status(200).send({
+                data: {
+                    signup: true,
+                    userId: payload['sub'],
+                    user
+                }
+            });
         } catch (e) {
             res.status(400).send(e);
         }
     }
 });
 
-
-/**
+/** POST: /users/c 
  * Route for signup / signin user with my custom system
  * expecting in the body : 
  *  {
@@ -155,7 +135,6 @@ usersRoute.post('/g', async (req, res) => {
  *       }
  *  }
  * */
-// POST: /users/c
 usersRoute.post('/c', async (req, res) => {
 
     // **** 1 **** - validateion of the req body
@@ -194,13 +173,19 @@ usersRoute.post('/c', async (req, res) => {
             // generate token / if cant generate token --> throw Error
             const tokenData = await user.generateAuthToken(req);
             console.log(tokenData);
-            res.header('x-auth', tokenData.token).send({ data: { user, tokenData } });
+            res.header('x-auth', tokenData.token).send({
+                data: {
+                    signin: true,
+                    user,
+                    tokenData
+                }
+            });
 
         } catch (e) {
             console.log(e);
         }
 
-    } 
+    }
     else {  //   -   SIGN-UP   -
         // if the user dont exists in the db 
 
@@ -224,7 +209,13 @@ usersRoute.post('/c', async (req, res) => {
             // generate token / if cant generate token --> throw Error
             const tokenData = await user.generateAuthToken(req);
             console.log(tokenData);
-            res.header('x-auth', tokenData.token).send({ data: { user, tokenData } });
+            res.header('x-auth', tokenData.token).send({
+                data: {
+                    signup: true,
+                    user,
+                    tokenData
+                }
+            });
 
         } catch (e) {
             res.status(400).send(e);
@@ -233,7 +224,9 @@ usersRoute.post('/c', async (req, res) => {
 
 });
 
-
+/** validation 
+ * @param {*} reqBody 
+ */
 const validateCustomSignRequest = (reqBody) => {
     if ((reqBody.email == undefined || reqBody.email == null) || (reqBody.password == undefined || reqBody.password == null)) {
         return false;
@@ -241,40 +234,111 @@ const validateCustomSignRequest = (reqBody) => {
         return true;
     }
 }
-/**
+
+/** POST: /users/data 
+ * Route for submiting user data
+ * */
+usersRoute.post('/data', authenticate, async (req, res) => {
+    const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
+    if (validateUserData(req.body)) {
+        const user = req.user;
+        try {
+            await user.setPersonalData(data);
+            res.send();
+        } catch (e) {
+            console.log(e);
+            res.status(400).send(e);
+        }
+    } else {
+        res.status(400).send('user data invalid.');
+    }
+
+});
+
+/** GET: /users/me 
  * Route for getting user by a token / the user object of the logged user
  * */
-// GET: /users/me
 usersRoute.get('/me', authenticate, (req, res) => {
-    res.send(req.user);
+    res.send({
+        data: { 
+            authValue: req.authValue, 
+            user: req.user
+        }
+    });
 });
 
-
-// NOT IN USE
-/**
- * Route for loggin a user by email & pass
- * */
-// POST: /users/login
-usersRoute.post('/login', async (req, res) => {
-    console.log(req.ip, req.connection.remoteAddress);
-    var body = _.pick(req.body, ['email', 'password']);
-    try {
-        // if cant find user --> throw Error
-        const user = await User.findByCredentials(body.email, body.password);
-        console.log(user);
-        // if cant generate token --> throw Error
-        const tokenData = await user.generateAuthToken(req);
-        console.log(tokenData);
-        res.header('x-auth', tokenData.token).send({ data: { user, tokenData } });
-    } catch (e) {
-        res.status(401).send(e);
+/** validation 
+ * @param {Object} data validate that if a field exists it's value valide.
+ * @returns true if all the existed fileds are valide.
+ */
+const validateUserData = (data) => {
+    if (data.lastName != undefined && data.lastName != null) {
+        if (!validator.isAlpha(data.lastName)) {
+            return false;
+        }
     }
-});
+    if (data.firstName != undefined && data.firstName != null) {
+        if (!validator.isAlpha(data.firstName)) {
+            return false;
+        }
+    }
+    if (data.birthDate != undefined && data.birthDate != null) {
+        if (!validateBirthDate(data.birthDate)) {
+            return false;
+        }
+    }
+    if (data.gender != undefined && data.gender != null) {
+        if (!['male', 'female'].includes(data.gender)) {
+            return false;
+        }
+    }
+}
 
-/**
+/** validation 
+ * @param { Object } birthDate contains year, month, day fields.
+ * @returns true if the fields year, month, day all numeric and follow the calender rulls. 
+ */
+const validateBirthDate = (birthDate) => {
+
+    try {
+        const y = parseInt(birthDate.year);
+        const m = parseInt(birthDate.month);
+        const d = parseInt(birthDate.day);
+        const curYear = new Date().getFullYear();
+        if (!_.inRange(y, 1900, curYear)) {
+            return false;
+        }
+        if (!_.inRange(m, 1, 12)) {
+            return false;
+        }
+        switch (m) {
+            case 2:
+                if ((y % 4 == 0 && _.inRange(d, 1, 29)) || _.inRange(d, 1, 28)) {
+                    return true;
+                }
+                break;
+            case 1 | 3 | 5 | 7 | 8 | 10 | 12:
+                if (_.inRange(d, 1, 31)) {
+                    return true;
+                }
+                break;
+
+            default:
+                if (_.inRange(d, 1, 30)) {
+                    return true;
+                }
+                break;
+        }
+        return false;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+
+/** DELETE: /users/me/token 
  * Route for deltng token / signout user
  * */
-// DELETE: /users/me/token
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
     var user = req.user;
     try {

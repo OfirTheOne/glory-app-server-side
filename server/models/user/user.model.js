@@ -14,11 +14,17 @@ const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
 const jwtAmountPerIP = 5; // amount of tokens that can be generate per ip
 
 
+
+/** @description .
+ *      #### overriding the toJSON method.
+ * by that, every time sending a user object in result, only _id, email, provider and personalData
+ * fields will by send.
+ */
 UserSchema.methods.toJSON = function () {
     const user = this;
     const userObject = user.toObject();
 
-    return _.pick(userObject, ['_id', 'email', 'provider']);
+    return _.pick(userObject, ['_id', 'email', 'provider', 'personalData']);
 }
 
 /** @description .
@@ -123,7 +129,7 @@ UserSchema.methods.setPersonalData = async function (data) {
     try {
         return await user.update({
             $set: {
-                userPersonalData: { data }
+                personalData: { data }
             }
         });
     } catch (e) {
@@ -154,7 +160,7 @@ UserSchema.statics.findByCredentials = async function (email, password) {
     }
 };
 
-UserSchema.statics.findByToken = async function (token, provider) {
+UserSchema.statics.findByToken = async function (req, token, provider) {
     const User = this;
     try {
 
@@ -172,12 +178,14 @@ UserSchema.statics.findByToken = async function (token, provider) {
 
                 const ticket = User.verifyCustomToken(token);
                 const payload = ticket.getPayload();
-                return await User.findOne({
+                const user = await User.findOne({
                     email: payload.email,
                     provider,
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
+                req.authValue = payload['sub'];
+                return user;
 
             case 'facebook':
 
