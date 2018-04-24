@@ -96,14 +96,19 @@
   
   
 * #### POST /user/data :
-    * *expect* - header : { x-auth : token }, body : { provider, userId,  data : { firstName?, lastName?, birthDate?, gender? } }.
+    * *expect* - header : { x-auth : token, x-provider: provider }, body : { data : { firstName?, lastName?, birthDate?, gender? } }.
     * *return* - None
     * *description* - **authenticate route** 
     
     
 * #### GET /user/me :
-    * *expect* - header : { x-auth : token }, body : { provider }.
+    * *expect* - header : { x-auth : token, x-provider: provider }.
     * *return* - body : { data : { authValue, user : { firstName?, lastName?, birthDate?, gender? } }.
     * *description* - **authenticate route** .
     * *notes* - the purpose of authValue is to authenticate the resonse of the server.  
+
+
+
+### Authentication Notes
+* any authenticate route must recieve in the request two headers 'x-auth' contains the token that the logged user holding, 'x-provider'   equles to the provider the supply the token.
 
