@@ -109,6 +109,6 @@
 
 
 
-### Authentication Notes
-* any authenticate route must recieve in the request two headers 'x-auth' contains the token that the logged user holding, 'x-provider'   equles to the provider the supply the token.
+#### Authentication Notes
+any authenticate route must recieve in the request two headers 'x-auth' contains the token that the logged user holding, 'x-provider'   equals to the provider the supply the token.
 
