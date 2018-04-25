@@ -12,9 +12,9 @@
                             in dev-mode.      
 - POST:   .../data      --> [must be authenticate] submit / update user data,
                             expect a body with user data, if successful return 200.
-- GET:    .../me        --> [must be authenticate] get user route, expect a vaild token, 
-                            if successful return 200 and the logged user.
-- DELETE: .../me/token  --> [must be authenticate] sign out route, expect a vaild token and deleting it, 
+- GET:    .../me        --> [must be authenticate] get user route, expect a vaild token and provider, 
+                            if successful return 200 and the logged user data.
+- DELETE: .../me/token  --> [must be authenticate] sign out route, expect a vaild token and provider, and than deleting the token, 
                             if successful return 200.
 ```
 #### /users/cart 
