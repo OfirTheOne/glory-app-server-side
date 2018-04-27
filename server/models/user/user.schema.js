@@ -1,6 +1,21 @@
 const { mongoose } = require('../../db/mongoose');
 const validator = require('validator');
 
+const UserBirthDateSchema = new mongoose.Schema({
+    day: {
+        type: Number,
+        required: true,
+    },
+    month: {
+        type: Number,
+        required: true,
+    },
+    year: {
+        type: Number,
+        required: true,
+    }
+});
+
 const UserPersonalDataSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -21,18 +36,7 @@ const UserPersonalDataSchema = new mongoose.Schema({
         validate: (value) => ['male', 'female'].includes(value)
     },
     birthDate: {
-        day: {
-            type: Number,
-            required: true,
-        },
-        month: {
-            type: Number,
-            required: true,
-        },
-        year: {
-            type: Number,
-            required: true,
-        },
+        type: UserBirthDateSchema,
         required: true,
     },
 });
