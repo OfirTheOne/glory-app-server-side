@@ -13,24 +13,28 @@ const UserPersonalDataSchema = new mongoose.Schema({
         required: true,
         trim: true,
         minlength: 1,
-    }, 
+    },
     gender: {
         type: String,
+        required: true,
         minlength: 1,
         validate: (value) => ['male', 'female'].includes(value)
-    }, 
-    birthDate : {
+    },
+    birthDate: {
         day: {
             type: Number,
+            required: true,
         },
         month: {
-            type: Number
+            type: Number,
+            required: true,
         },
         year: {
-            type: Number
-        }
-    }
-
+            type: Number,
+            required: true,
+        },
+        required: true,
+    },
 });
 
 const UserSchema = new mongoose.Schema({
@@ -64,9 +68,9 @@ const UserSchema = new mongoose.Schema({
         type: UserPersonalDataSchema,
     },
     roll: {
-        type: Number, 
+        type: Number,
         default: 1,
-        validate: (value) => [1, 2].includes(value) 
+        validate: (value) => [1, 2].includes(value)
     },
     tokens: [{
         access: {

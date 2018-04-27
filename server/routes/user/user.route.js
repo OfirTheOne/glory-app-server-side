@@ -82,7 +82,7 @@ usersRoute.post('/g', async (req, res) => {
             await user.addToken(idToken);
             res.status(200).send({
                 data: {
-                    signup: false,
+                    signin: true,
                     userId: payload['sub'],
                     user
                 }
@@ -177,7 +177,8 @@ usersRoute.post('/c', async (req, res) => {
                 data: {
                     signin: true,
                     user,
-                    tokenData
+                    tokenData,
+                    dataDefined: isUserDataDefined(user)
                 }
             });
 
@@ -199,7 +200,11 @@ usersRoute.post('/c', async (req, res) => {
             await user.save();
 
             // updating his personal data
-            await user.setPersonalData(req.body.data);
+            let dataDefined = false;
+            if(req.body.data != undefined) {
+                await user.setPersonalData(req.body.data);
+                dataDefined = true;
+            }
 
             // creating new cart
             const ownerId = user._id;
@@ -213,7 +218,8 @@ usersRoute.post('/c', async (req, res) => {
                 data: {
                     signup: true,
                     user,
-                    tokenData
+                    tokenData,
+                    dataDefined
                 }
             });
 
@@ -262,7 +268,8 @@ usersRoute.get('/me', authenticate, (req, res) => {
     res.send({
         data: { 
             authValue: req.authValue, 
-            user: req.user
+            user: req.user,
+            dataDefined: isUserDataDefined(req.user)
         }
     });
 });
@@ -334,6 +341,11 @@ const validateBirthDate = (birthDate) => {
         console.log(e);
         return false;
     }
+}
+
+const isUserDataDefined = (user) => {
+    let isDefine = (user.personalData != undefined) && (user.personalData.firstName != undefined);
+    return isDefine;
 }
 
 /** DELETE: /users/me/token 
