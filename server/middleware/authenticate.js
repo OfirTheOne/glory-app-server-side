@@ -3,15 +3,17 @@ const { User } = require('../models/user/user.model');
 const authenticate = async (req, res, next) => {
     const token = req.header('x-auth');
     const provider = req.header('x-provider');
-   
+   console.log(token, provider);
     try {
         const user = await User.findByToken(req, token, provider);
+        console.log(user);
 
         if (!user) {
             throw new Error();
         }
         req.user = user;
         req.token = token;
+        console.log('end middleware');
         next();
 
     } catch (e) {
