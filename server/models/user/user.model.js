@@ -115,7 +115,10 @@ UserSchema.methods.addToken = async function (token) {
     try {
         return await user.update({
             $push: {
-                tokens: { token }
+                tokens: { 
+                    token,
+                    'access': 'auth'
+                }
             }
         });
     } catch (e) {
