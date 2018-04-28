@@ -83,7 +83,7 @@ usersRoute.post('/g', async (req, res) => {
             res.status(200).send({
                 data: {
                     signin: true,
-                    userId: payload['sub'],
+                    authValue: payload['sub'],
                     user
                 }
             });
@@ -95,7 +95,7 @@ usersRoute.post('/g', async (req, res) => {
         // if the user dont exists in the db 
         user = new User({ email, provider })
         try {
-            await user.save();
+            
 
             await user.setPersonalData({
                 email,
@@ -108,13 +108,15 @@ usersRoute.post('/g', async (req, res) => {
             const cart = new Cart({ ownerId })
             await cart.save();
             await user.addToken(idToken);
+            
+            await users;
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
             res.status(200).send({
                 data: {
                     signup: true,
-                    userId: payload['sub'],
+                    authValue: payload['sub'],
                     user
                 }
             });

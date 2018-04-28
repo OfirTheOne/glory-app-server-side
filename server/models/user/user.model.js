@@ -176,7 +176,7 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
 
             case 'google':
 
-                const ticket = User.verifyCustomToken(token);
+                const ticket = User.verifyGoogleToken(token);
                 const payload = ticket.getPayload();
                 const user = await User.findOne({
                     email: payload.email,
@@ -199,6 +199,7 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
         throw e;
     }
 };
+
 
 UserSchema.statics.verifyCustomToken = async function (token) {
     var decoded;
