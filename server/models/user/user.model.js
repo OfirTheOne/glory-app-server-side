@@ -113,14 +113,17 @@ UserSchema.methods.removeToken = async function (token) {
 UserSchema.methods.addToken = async function (token) {
     const user = this;
     try {
-        return await user.update({
-            $push: {
-                tokens: { 
-                    token,
-                    'access': 'auth'
+        const isTokenExistsInArray = user.tokens.some((element) =>  element.token == token);
+        if (!isTokenExistsInArray) {
+            return await user.update({
+                $push: {
+                    tokens: {
+                        token,
+                        'access': 'auth'
+                    }
                 }
-            }
-        });
+            });
+        }
     } catch (e) {
         throw e;
     }
@@ -215,12 +218,12 @@ UserSchema.statics.verifyCustomToken = async function (token) {
 };
 
 UserSchema.statics.verifyGoogleToken = async function (token) {
-    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID );
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     let ticket;
     try {
         ticket = await client.verifyIdToken({
             idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID 
+            audience: process.env.GOOGLE_CLIENT_ID
         });
         return ticket;
     } catch (e) {

@@ -3,17 +3,16 @@ const { User } = require('../models/user/user.model');
 const authenticate = async (req, res, next) => {
     const token = req.header('x-auth');
     const provider = req.header('x-provider');
-   console.log(token, provider);
+  
     try {
         const user = await User.findByToken(req, token, provider);
-        console.log(user);
-
+       
         if (!user) {
             throw new Error('cant find user');
         }
         req.user = user;
         req.token = token;
-        console.log('end middleware');
+        console.log('end authenticate middleware');
         next();
 
     } catch (e) {
@@ -31,15 +30,17 @@ const authenticate = async (req, res, next) => {
 
 const authenticateAdmin = async (req, res, next) => {
     const token = req.header('x-auth');
+    const provider = req.header('x-provider');
 
     try {
-        const user = await User.findByToken(token);
+        const user = await User.findByToken(req, token, provider);
 
         if (!user || user.roll !== 2) {
-            throw new Error();
+            throw new Error('cant find user or the user is not an admin');
         }
         req.user = user;
         req.token = token;
+        console.log('end authenticateAdmin middleware');
         next();
 
     } catch (e) {
