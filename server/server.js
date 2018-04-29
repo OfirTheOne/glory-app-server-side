@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 
 
 app.use(function(req, res, next){
-    var whitelist = ['localhost:8100', 'guarded-escarpment-70218.herokuapp.com']
+    var whitelist = ['localhost:8100', 'https://guarded-escarpment-70218.herokuapp.com']
     var host = req.get('host');
   
     whitelist.forEach(function(val, key){
