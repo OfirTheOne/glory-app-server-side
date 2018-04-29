@@ -181,14 +181,13 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
 
                 const ticket = User.verifyGoogleToken(token);
                 const payload = ticket.getPayload();
-                const user = await User.findOne({
+                req.authValue = payload['sub'];
+                return await User.findOne({
                     email: payload.email,
                     provider,
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
-                req.authValue = payload['sub'];
-                return user;
 
             case 'facebook':
 

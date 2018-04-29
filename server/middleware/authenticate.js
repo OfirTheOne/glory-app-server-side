@@ -9,7 +9,7 @@ const authenticate = async (req, res, next) => {
         console.log(user);
 
         if (!user) {
-            throw new Error();
+            throw new Error('cant find user');
         }
         req.user = user;
         req.token = token;
