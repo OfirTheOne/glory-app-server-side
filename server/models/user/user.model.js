@@ -169,8 +169,8 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
 
         switch (provider) {
             case 'custom':
-
-                const decoded = User.verifyCustomToken(token);
+                console.log('findByToken() : custom');
+                const decoded = await User.verifyCustomToken(token);
                 return await User.findOne({
                     _id: decoded._id,
                     'tokens.token': token,
@@ -178,8 +178,8 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                 });
 
             case 'google':
-
-                const ticket = User.verifyGoogleToken(token);
+                console.log('findByToken() : google');
+                const ticket = await User.verifyGoogleToken(token);
                 const payload = ticket.getPayload();
                 req.authValue = payload['sub'];
                 return await User.findOne({
