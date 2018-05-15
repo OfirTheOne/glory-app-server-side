@@ -13,10 +13,9 @@ app.use(bodyParser.json());
 
 // enable Cross-Origin Request [IMPORTANT]
 app.use((req, res, next) => {
-    // res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8100');
-    var whitelist = ['http://localhost:8100', 'https://guarded-escarpment-70218.herokuapp.com']
-    
+    var whitelist = require('./whitelist-urls');
     var origin = req.headers.origin;
+    
     if(whitelist.indexOf(origin) > -1){
          res.setHeader('Access-Control-Allow-Origin', origin);
     }

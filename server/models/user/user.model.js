@@ -4,6 +4,7 @@ const { mongoose } = require('../../db/mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
+const { FB, FacebookApiException } = require('fb');
 
 const _ = require('lodash');
 
@@ -113,7 +114,7 @@ UserSchema.methods.removeToken = async function (token) {
 UserSchema.methods.addToken = async function (token) {
     const user = this;
     try {
-        const isTokenExistsInArray = user.tokens.some((element) =>  element.token == token);
+        const isTokenExistsInArray = user.tokens.some((element) => element.token == token);
         if (!isTokenExistsInArray) {
             return await user.update({
                 $push: {
@@ -176,6 +177,7 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                 const decoded = await User.verifyCustomToken(token);
                 return await User.findOne({
                     _id: decoded._id,
+                    provider,
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
@@ -193,7 +195,15 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                 });
 
             case 'facebook':
-
+                console.log('findByToken() : facebook');
+                const authRes = await User.verifyFacebookToken(token);
+                req.authValue = authRes.id;
+                return await User.findOne({
+                    email: authRes.email,
+                    provider,
+                    'tokens.token': token,
+                    'tokens.access': 'auth'
+                });
                 break;
             default:
                 break;
@@ -232,6 +242,22 @@ UserSchema.statics.verifyGoogleToken = async function (token) {
 };
 
 UserSchema.statics.verifyFacebookToken = async function (token) {
+    
+    FB.options({ version: 'v2.4' });
+    var fbRes = FB.extend({ 
+        appId: process.env.FACEBOOK_APP_ID, 
+        appSecret: process.env.FACEBOOK_APP_SECRET 
+    });
+    try {
+        const res =  await FB.api('me', { fields: 'id,email,name', access_token: token });
+        console.log(res);
+        return res;
+
+    } catch(e) {
+        console.log(e);
+        throw e;
+    }
+    console.log(res);
 
 };
 
