@@ -22,7 +22,96 @@ usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' r
  * Route for signup / signin user with facebook
  * */
 usersRoute.post('/f', async (req, res) => {
-    
+    const idToken = req.body['idToken'];
+    const provider = 'facebook';
+
+    // **** 1 **** - verifing the idToken
+    let authTokenRes;
+    try {
+        authTokenRes = await User.verifyFacebookToken(idToken);
+        console.log(JSON.stringify(authTokenRes, undefined, 2));
+    } catch (e) {
+        return res.status(400).send(e);
+    }
+
+
+    // **** 2 **** - pulling the user data from the payload object
+    /*
+    * the payload object contains : 
+    *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
+    *  email?: string;  profile?: string;  picture?: string;  name?: string;  given_name?: string;
+    *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
+    * */
+
+    const email = authTokenRes['email'];
+    if(!email) {
+        return res.status(200).send('no email')
+    }
+    let user;
+
+    try {
+        user = await User.findUserByEmail(email);
+    } catch (e) {
+        // there is no user with that email
+        console.log(e);
+    }
+
+
+    // **** 3 **** - handeling two cases : SIGNIN & SIGNUP
+    if (user) {  // SIGN-IN
+        // if the user exists in the db 
+        if (user.provider != provider) {
+            // if the email exists but with other provider than google,
+            // the user allready sign up with the same email but using facebook or custom
+            return res.status(400).send('user email dont match the provider');
+        }
+
+        try {
+            await user.addToken(idToken);
+            res.status(200).send({
+                data: {
+                    signin: true,
+                    authValue: authTokenRes['id'],
+                    user
+                }
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+    else { // SIGN-UP
+        // if the user dont exists in the db 
+        user = new User({ email, provider })
+        try {
+            
+
+            await user.setPersonalData({
+                email,
+                lastName: authTokenRes['last_name'],
+                fisrtName: authTokenRes['name']
+
+            })
+
+            const ownerId = user._id;
+            const cart = new Cart({ ownerId })
+            await cart.save();
+            await user.addToken(idToken);
+            
+            await users;
+            // note to self : the returning of the userId to the client have a data integrity minning - by compering 
+            // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
+            // from the client to the server.
+            res.status(200).send({
+                data: {
+                    signup: true,
+                    authValue: authTokenRes['id'],
+                    user
+                }
+            });
+        } catch (e) {
+            res.status(400).send(e);
+        }
+    }
 });
 
 /** POST: /users/g 

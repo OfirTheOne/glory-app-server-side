@@ -249,7 +249,8 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
         appSecret: process.env.FACEBOOK_APP_SECRET 
     });
     try {
-        const res =  await FB.api('me', { fields: 'id,email,name', access_token: token });
+        // doc - https://developers.facebook.com/docs/facebook-login/permissions/v3.0
+        const res =  await FB.api('me', { fields: 'id,email,name,last_name', access_token: token });
         console.log(res);
         return res;
 
