@@ -266,13 +266,19 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
 UserSchema.statics.findUserByEmail = async function (email) {
     console.log(email);
     const User = this;
-    const user = await User.findOne({ email });
 
-    if (!user) {
-        throw new Error(`failed to find a user with the email : ${email}.`);
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            throw new Error(`failed to find a user with the email : ${email}.`);
+        }
+        return user;
+
+    } catch(e) {
+        console.log(`from UserSchema.statics.findUserByEmail(${email}) : `, e)
+        throw e;
     }
 
-    return user;
 
 }
 
