@@ -12,7 +12,7 @@ const LogStream = {
     DATABASE: 'database'
 }
 
-const writeDatabase = (logLevel, source, position, message) => {
+const writeDatabase = async (logLevel, source, position, message) => {
     const log = new Log({ logLevel, source, position, message });
 
     try {
@@ -22,11 +22,11 @@ const writeDatabase = (logLevel, source, position, message) => {
     }
 }
 
-const writeConsole = (logLevel, message) => {
+const writeConsole = async (logLevel, message) => {
     console.log(`logLeve : ${logLevel}, message : ${message} .`);
 }
 
-const writeFile = (logLevel, message) => { }
+const writeFile = async (logLevel, message) => { }
 
 
 
@@ -58,7 +58,7 @@ class Logger {
         }
     };
 
-    logMassage = (logLevel, source, position, message) => {
+    logMassage = async (logLevel, source, position, message) => {
         let messageStringify;
         if (this.writeMethod == undefined) {
             this.setWriteStream();
@@ -67,7 +67,12 @@ class Logger {
         if(typeof message === "object") {
             messageStringify = JSON.stringify(message);
         }
-        this.writeMethod(logLevel, source, position, messageStringify);
+        
+        try {
+            await this.writeMethod(logLevel, source, position, messageStringify);
+        } catch (e) {
+            console.log(e);
+        }
     };
 }
 
