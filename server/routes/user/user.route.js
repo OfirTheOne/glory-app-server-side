@@ -3,7 +3,7 @@ const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
 const { ObjectID } = require('mongodb');
-const { Logger, LogLevel, LogStream } = require('../../utils/logger-service');
+const { Logger, LogLevel, LogStream } = require('../../utils/logger-service/logger.service');
 
 // mongoose models
 const { User, USER_PROVIDERS } = require('../../models/user/user.model');
@@ -34,7 +34,8 @@ usersRoute.post('/f', async (req, res) => {
     const idToken = req.body['idToken'];
     const provider = 'facebook';
 
-    // **** 1 **** - Verifing idToken
+    // ****** Position 1 ****** // - Verifing idToken
+    // ******************************************************************* //
     let authTokenRes;
     try {
         authTokenRes = await User.verifyFacebookToken(idToken);
@@ -47,7 +48,8 @@ usersRoute.post('/f', async (req, res) => {
     }
 
 
-    // **** 2 **** - Find user obj 
+    // ****** Position 2 ****** // - Find user obj 
+    // ******************************************************************* //
     /**
      *  { "email": "" , "id": "", "name": "", "last_name": "" }
      */
@@ -64,9 +66,11 @@ usersRoute.post('/f', async (req, res) => {
     }
 
 
-    // **** 3 **** - Handeling two cases : SIGNIN & SIGNUP
+    // ****** Position 3 ****** // - Handeling two cases : SIGNIN & SIGNUP
+    // ******************************************************************* //
     console.log(`step 3`);
-    if (user) {  // SIGN-IN
+    if (user) {  
+        // SIGN-IN
         console.log(`step 3 - SIGN-IN`);
         logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-IN`, '');
 
@@ -94,7 +98,8 @@ usersRoute.post('/f', async (req, res) => {
             console.log(e);
         }
     }
-    else { // SIGN-UP
+    else { 
+        // SIGN-UP
         logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-UP`, '');
         console.log(`step 3 - SIGN-UP`);
 
@@ -147,7 +152,8 @@ usersRoute.post('/g', async (req, res) => {
     const idToken = req.body['idToken'];
     const provider = 'google';
 
-    // **** 1 **** - verifing the idToken
+    // ****** Position 1 ****** // - Verifing idToken
+    // ******************************************************************* //
     let ticket;
     try {
         ticket = await User.verifyGoogleToken(idToken);
@@ -156,7 +162,9 @@ usersRoute.post('/g', async (req, res) => {
     }
 
 
-    // **** 2 **** - pulling the user data from the payload object
+
+    // ****** Position 2 ****** // - find user obj
+    // ******************************************************************* //
     /*
     * the payload object contains : 
     *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
@@ -176,8 +184,11 @@ usersRoute.post('/g', async (req, res) => {
     }
 
 
-    // **** 3 **** - handeling two cases : SIGNIN & SIGNUP
-    if (user) {  // SIGN-IN
+
+    // ****** Position 3 ****** // - handeling two cases : SIGNIN & SIGNUP
+    // ******************************************************************* //
+    if (user) {  
+        // SIGN-IN
         // if the user exists in the db 
         if (user.provider != provider) {
             // if the email exists but with other provider than google,
@@ -202,8 +213,6 @@ usersRoute.post('/g', async (req, res) => {
         // if the user dont exists in the db 
         user = new User({ email, provider })
         try {
-
-
             await user.setPersonalData({
                 email,
                 lastName: payload['family_name'],
