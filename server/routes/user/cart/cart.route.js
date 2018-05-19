@@ -1,5 +1,4 @@
 const cartRoute = require('express').Router();
-// const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 const _ = require('lodash');
 
@@ -10,10 +9,12 @@ const { Product } = require('../../../models/product/product.model');
 // middleware
 const { authenticate } = require('../../../middleware/authenticate');
 
-/**
+
+/********* routes *********/
+
+/** POST: /users/cart
  * Route for adding item to a user cart
  * */
-// POST: /users/cart
 cartRoute.post('/', authenticate, async (req, res) => {
 
     // --1-- validate the body  
@@ -47,29 +48,9 @@ cartRoute.post('/', authenticate, async (req, res) => {
     }
 });
 
-// validate POST: /users/cart request
-/** @description .
- *      #### Validetor for the request POST: /users/cart
- *      The accepted request body params are pid and size.
- *      * view [must param], valide ObjectID.
- *      * size [must param], one of the strings 'S', 'M', 'L', 'O', 
- * @param {Object} req income request
- */
-const validateAddCartItemRequest = (req) => {
-    const sizeOptions = ['S', 'M', 'L', 'O'];
-    const { pid } = req.body;
-    const { size } = req.body;
-    if (!ObjectID.isValid(pid) || !sizeOptions.includes(size)) {
-        return false;
-    }
-    return true;
-
-}
-
-/**
+/** GET: /users/cart
  * Route for getting the all cart 
  * */
-// GET: /users/cart
 cartRoute.get('/', authenticate, async (req, res) => {
     const uid = req.user._id;
 
@@ -132,10 +113,9 @@ cartRoute.get('/products', authenticate, async (req, res) => {
     }
 });
 
-/**
+/** DELETE: /users/cart/q
  * Route for deleting item by his id from user cart
  * */
-// DELETE: /users/cart/q
 cartRoute.delete('/:q', authenticate, async (req, res) => {
     const uid = req.user._id;
     const delParams = req.query;
@@ -162,6 +142,56 @@ cartRoute.delete('/:q', authenticate, async (req, res) => {
 
 });
 
+
+
+
+// /**
+//  * Route for empting the user cart
+//  * */
+// // DELETE: /users/cart/all
+// cartRoute.delete('/all', authenticate, async (req, res) => {
+//     const uid = req.user._id;
+//     try {
+//         const cart = await Cart.findOneAndUpdate(
+//             { ownerId: uid },
+//             { $set: { contant: [] } },
+//             { new: true }
+//         )
+//         if (!cart) {
+//             res.status(404).send();
+//         }
+//         res.send();
+//     } catch (e) {
+//         res.status(400).send();
+//     }
+
+// });
+
+module.exports = {
+    cartRoute
+}
+
+
+/********* validators *********/
+
+// validate POST: /users/cart request
+/** @description .
+ *      #### Validetor for the request POST: /users/cart
+ *      The accepted request body params are pid and size.
+ *      * view [must param], valide ObjectID.
+ *      * size [must param], one of the strings 'S', 'M', 'L', 'O', 
+ * @param {Object} req income request
+ */
+const validateAddCartItemRequest = (req) => {
+    const sizeOptions = ['S', 'M', 'L', 'O'];
+    const { pid } = req.body;
+    const { size } = req.body;
+    if (!ObjectID.isValid(pid) || !sizeOptions.includes(size)) {
+        return false;
+    }
+    return true;
+
+}
 
 // validate DELETE: /user/cart/:q request
 /** @description .
@@ -191,31 +221,4 @@ const valideteDeleteProductRequest = (req) => {
         return false;
     }
     return true;
-}
-
-
-// /**
-//  * Route for empting the user cart
-//  * */
-// // DELETE: /users/cart/all
-// cartRoute.delete('/all', authenticate, async (req, res) => {
-//     const uid = req.user._id;
-//     try {
-//         const cart = await Cart.findOneAndUpdate(
-//             { ownerId: uid },
-//             { $set: { contant: [] } },
-//             { new: true }
-//         )
-//         if (!cart) {
-//             res.status(404).send();
-//         }
-//         res.send();
-//     } catch (e) {
-//         res.status(400).send();
-//     }
-
-// });
-
-module.exports = {
-    cartRoute
 }

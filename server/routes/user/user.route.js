@@ -3,6 +3,7 @@ const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
 const { ObjectID } = require('mongodb');
+const { Logger, LogLevel, LogStream } = require('../../utils/logger-service');
 
 // mongoose models
 const { User, USER_PROVIDERS } = require('../../models/user/user.model');
@@ -17,47 +18,58 @@ const { wishRoute } = require('./wish/wish.route'); // sub-route '/wish' of '/us
 usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' route
 usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
 
+// set logger service object
+const logger = new Logger(LogStream.DATABASE);
+
+
+/********* routes *********/
+
 
 /** POST: /users/f 
  * Route for signup / signin user with facebook
  * */
 usersRoute.post('/f', async (req, res) => {
+    logger.logMassage(LogLevel.INFO, `POST: /users/f`, `Entry`, req);
+
     const idToken = req.body['idToken'];
     const provider = 'facebook';
 
-    // **** 1 **** - verifing the idToken
+    // **** 1 **** - Verifing idToken
     let authTokenRes;
     try {
         authTokenRes = await User.verifyFacebookToken(idToken);
+        logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `Verifing idToken - authTokenRes :`, authTokenRes);
+
         console.log(JSON.stringify(authTokenRes, undefined, 2));
     } catch (e) {
+        logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `Verifing idToken`, e);
         return res.status(400).send(e);
     }
 
 
-    // **** 2 **** - pulling the user data 
+    // **** 2 **** - Find user obj 
     /**
-     *  { 
-     *      "email": "adidinasri@gmail.com",
-     *      "id": "251074535454201",
-     *      "name": "Adi Nasri",
-     *      "last_name": "Nasri"
-     *  }
+     *  { "email": "" , "id": "", "name": "", "last_name": "" }
      */
     const email = authTokenRes['email'];
     let user;
     try {
         user = await User.findUserByEmail(email);
+        logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `Find user obj - user :`, user);
+
     } catch (e) {
         // there is no user with that email
+        logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `Find user obj`, e);
         console.log(e);
     }
 
 
-    // **** 3 **** - handeling two cases : SIGNIN & SIGNUP
+    // **** 3 **** - Handeling two cases : SIGNIN & SIGNUP
     console.log(`step 3`);
     if (user) {  // SIGN-IN
         console.log(`step 3 - SIGN-IN`);
+        logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-IN`, '');
+
         // if the user exists in the db 
         if (user.provider != provider) {
             // if the email exists but with other provider than facebook,
@@ -67,7 +79,9 @@ usersRoute.post('/f', async (req, res) => {
 
         try {
             await user.addToken(idToken);
-        console.log(`finished step 3 - SIGN-IN`);            
+            logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `End, SIGN-IN`, '');
+            console.log(`finished step 3 - SIGN-IN`);
+
             res.status(200).send({
                 data: {
                     signin: true,
@@ -76,11 +90,14 @@ usersRoute.post('/f', async (req, res) => {
                 }
             });
         } catch (e) {
+            logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `End, SIGN-IN`, e);
             console.log(e);
         }
     }
     else { // SIGN-UP
-        console.log(`step 3 - SIGN-UP`);        
+        logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-UP`, '');
+        console.log(`step 3 - SIGN-UP`);
+
         // if the user dont exists in the db 
         user = new User({ email, provider })
         try {
@@ -95,8 +112,8 @@ usersRoute.post('/f', async (req, res) => {
             const cart = new Cart({ ownerId })
             await cart.save();
             await user.addToken(idToken);
-            
-            console.log(`finished step 3 - SIGN-up`);            
+
+            console.log(`finished step 3 - SIGN-UP`);
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
@@ -108,6 +125,7 @@ usersRoute.post('/f', async (req, res) => {
                 }
             });
         } catch (e) {
+            logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `End, SIGN-UP`, e);
             res.status(400).send(e);
         }
     }
@@ -125,7 +143,7 @@ usersRoute.post('/f', async (req, res) => {
  *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
  * */
 usersRoute.post('/g', async (req, res) => {
-
+    logger.logMassage(LogLevel.INFO, `POST: /users/g`, `Entry`, req);
     const idToken = req.body['idToken'];
     const provider = 'google';
 
@@ -184,7 +202,7 @@ usersRoute.post('/g', async (req, res) => {
         // if the user dont exists in the db 
         user = new User({ email, provider })
         try {
-            
+
 
             await user.setPersonalData({
                 email,
@@ -197,7 +215,7 @@ usersRoute.post('/g', async (req, res) => {
             const cart = new Cart({ ownerId })
             await cart.save();
             await user.addToken(idToken);
-            
+
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
@@ -226,6 +244,7 @@ usersRoute.post('/g', async (req, res) => {
  *  }
  * */
 usersRoute.post('/c', async (req, res) => {
+    logger.logMassage(LogLevel.INFO, `POST: /users/c`, `Entry`, req);
 
     // **** 1 **** - validateion of the req body
     if (!validateCustomSignRequest(req.body)) {
@@ -291,7 +310,7 @@ usersRoute.post('/c', async (req, res) => {
 
             // updating his personal data
             let dataDefined = false;
-            if(req.body.data != undefined) {
+            if (req.body.data != undefined) {
                 await user.setPersonalData(req.body.data);
                 dataDefined = true;
             }
@@ -320,21 +339,12 @@ usersRoute.post('/c', async (req, res) => {
 
 });
 
-/** validation 
- * @param {*} reqBody 
- */
-const validateCustomSignRequest = (reqBody) => {
-    if ((reqBody.email == undefined || reqBody.email == null) || (reqBody.password == undefined || reqBody.password == null)) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 /** POST: /users/data 
  * Route for submiting user data
  * */
 usersRoute.post('/data', authenticate, async (req, res) => {
+    logger.logMassage(LogLevel.INFO, `POST: /users/data`, `Entry`, req);
+
     const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
     if (validateUserData(req.body)) {
         const user = req.user;
@@ -355,14 +365,52 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
+    logger.logMassage(LogLevel.INFO, `GET: /me`, `Entry`, req);
+
     res.send({
-        data: { 
-            authValue: req.authValue, 
+        data: {
+            authValue: req.authValue,
             user: req.user,
             dataDefined: isUserDataDefined(req.user)
         }
     });
 });
+
+/** DELETE: /users/me/token 
+ * Route for deltng token / signout user
+ * */
+usersRoute.delete('/me/token', authenticate, async (req, res) => {
+    logger.logMassage(LogLevel.INFO, `DELETE: /me/token`, `Entry`, req);
+
+    var user = req.user;
+    try {
+        const resulte = await user.removeToken(req.token);
+        console.log(resulte);
+        res.send();
+    } catch (e) {
+        res.status(400).send(e);
+    }
+
+})
+
+
+module.exports = {
+    usersRoute
+}
+
+ 
+/********* validators *********/
+
+/** validation 
+ * @param {*} reqBody 
+ */
+const validateCustomSignRequest = (reqBody) => {
+    if ((reqBody.email == undefined || reqBody.email == null) || (reqBody.password == undefined || reqBody.password == null)) {
+        return false;
+    } else {
+        return true;
+    }
+}
 
 /** validation 
  * @param {Object} data validate that if a field exists it's value valide.
@@ -437,25 +485,3 @@ const isUserDataDefined = (user) => {
     let isDefine = (user.personalData != undefined) && (user.personalData.firstName != undefined);
     return isDefine;
 }
-
-/** DELETE: /users/me/token 
- * Route for deltng token / signout user
- * */
-usersRoute.delete('/me/token', authenticate, async (req, res) => {
-    var user = req.user;
-    try {
-        const resulte = await user.removeToken(req.token);
-        console.log(resulte);
-        res.send();
-    } catch (e) {
-        res.status(400).send(e);
-    }
-
-})
-
-
-module.exports = {
-    usersRoute
-}
-
-
