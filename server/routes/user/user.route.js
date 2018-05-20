@@ -389,7 +389,7 @@ usersRoute.get('/me', authenticate, (req, res) => {
  * Route for deltng token / signout user
  * */
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `DELETE: /me/token`, `Entry`, req);
+    logger.logMassage(LogLevel.INFO, `DELETE: /me/token`, `Entry`, req.body);
 
     var user = req.user;
     try {
