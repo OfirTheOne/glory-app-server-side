@@ -32,9 +32,9 @@ const writeFile = async (logLevel, message) => { }
 
 class Logger {
 
-    writeMethod;
 
     constructor(logStream) {
+        this.writeMethod = undefined;
         this.setWriteStream(logStream);
     }
 
@@ -72,7 +72,7 @@ class Logger {
             await this.writeMethod(logLevel, source, position, messageStringify);
         } catch (e) {
             console.log(e);
-            
+
         }
     };
 }
