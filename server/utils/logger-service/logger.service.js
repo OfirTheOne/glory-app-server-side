@@ -32,13 +32,12 @@ const writeFile = async (logLevel, message) => { }
 
 class Logger {
 
-
     constructor(logStream) {
         this.writeMethod = undefined;
         this.setWriteStream(logStream);
     }
 
-    setWriteStream = (stream) => {
+    setWriteStream(stream) {
         switch (stream) {
             case LogStream.DATABASE:
                 this.writeMethod = writeDatabase;
@@ -58,13 +57,13 @@ class Logger {
         }
     };
 
-    logMassage = async (logLevel, source, position, message) => {
+    async logMassage(logLevel, source, position, message) {
         let messageStringify;
         if (this.writeMethod == undefined) {
             this.setWriteStream();
         }
 
-        if(typeof message === "object") {
+        if (typeof message === "object") {
             messageStringify = JSON.stringify(message);
         }
 
