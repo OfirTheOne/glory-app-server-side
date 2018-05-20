@@ -64,7 +64,11 @@ class Logger {
         }
 
         if (typeof message === "object") {
-            messageStringify = JSON.stringify(message);
+            try {
+                messageStringify = JSON.stringify(message);
+            } catch(e) {
+                messageStringify = '';
+            }
         }
 
         try {

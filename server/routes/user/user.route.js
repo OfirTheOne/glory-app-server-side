@@ -29,7 +29,7 @@ const logger = new Logger(LogStream.DATABASE);
  * Route for signup / signin user with facebook
  * */
 usersRoute.post('/f', async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/f`, `Entry`, req);
+    logger.logMassage(LogLevel.INFO, `POST: /users/f`, `Entry`, req.body);
 
     const idToken = req.body['idToken'];
     const provider = 'facebook';
@@ -253,7 +253,7 @@ usersRoute.post('/g', async (req, res) => {
  *  }
  * */
 usersRoute.post('/c', async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/c`, `Entry`, req);
+    logger.logMassage(LogLevel.INFO, `POST: /users/c`, `Entry`, req.body);
 
     // **** 1 **** - validateion of the req body
     if (!validateCustomSignRequest(req.body)) {
@@ -352,7 +352,7 @@ usersRoute.post('/c', async (req, res) => {
  * Route for submiting user data
  * */
 usersRoute.post('/data', authenticate, async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/data`, `Entry`, req);
+    logger.logMassage(LogLevel.INFO, `POST: /users/data`, `Entry`, req.body);
 
     const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
     if (validateUserData(req.body)) {
@@ -374,7 +374,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
-    logger.logMassage(LogLevel.INFO, `GET: /me`, `Entry`, req);
+    logger.logMassage(LogLevel.INFO, `GET: /me`, `Entry`, req.body);
 
     res.send({
         data: {
