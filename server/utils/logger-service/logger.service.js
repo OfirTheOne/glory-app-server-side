@@ -67,11 +67,12 @@ class Logger {
         if(typeof message === "object") {
             messageStringify = JSON.stringify(message);
         }
-        
+
         try {
             await this.writeMethod(logLevel, source, position, messageStringify);
         } catch (e) {
             console.log(e);
+            
         }
     };
 }
