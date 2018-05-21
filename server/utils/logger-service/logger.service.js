@@ -63,11 +63,12 @@ class Logger {
             this.setWriteStream();
         }
 
-        if (typeof message === "object") {
+        if (typeof message != "string") {
             try {
                 messageStringify = JSON.stringify(message);
             } catch(e) {
-                messageStringify = '';
+                console.log(e);
+                messageStringify = ''; // in case of cyclic object value
             }
         }
 

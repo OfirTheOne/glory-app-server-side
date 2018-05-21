@@ -113,6 +113,7 @@ usersRoute.post('/f', async (req, res) => {
 
             })
 
+            await user.save();
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
             await cart.save();
@@ -218,8 +219,9 @@ usersRoute.post('/g', async (req, res) => {
                 lastName: payload['family_name'],
                 fisrtName: payload['given_name']
 
-            })
+            });
 
+            await user.save();
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
             await cart.save();
