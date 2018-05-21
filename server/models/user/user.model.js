@@ -99,13 +99,16 @@ const canGenerateToIP = (tokens, deviceIp) => {
 
 
 UserSchema.methods.removeToken = async function (token) {
+    console.log(`removeToken : token ${token}`)
     const user = this;
     try {
-        return await user.update({
+        const removeRes = await user.update({
             $pull: {
                 tokens: { token }
             }
         });
+        console.log(`removeToken : removeRes ${removeRes}`)        
+        return removeRes
     } catch (e) {
         throw e;
     }
