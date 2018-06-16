@@ -171,24 +171,29 @@ UserSchema.statics.findByCredentials = async function (email, password) {
 };
 
 UserSchema.statics.findByToken = async function (req, token, provider) {
+    console.log('method : findByToken(req, token, provider)');
+    console.log(`params :\n req - ${req},\n token - ${token},\n provider - ${provider} \n`);
+    
     const User = this;
     try {
 
         switch (provider) {
             case 'custom':
-                console.log('findByToken() : custom');
-                const decoded = await User.verifyCustomToken(token);
+                console.log('case : custom');
+                const verificationResult = await User.verifyCustomToken(token);
+
                 return await User.findOne({
-                    _id: decoded._id,
+                    _id: verificationResult._id,
                     provider,
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
 
             case 'google':
-                console.log('findByToken() : google');
-                const ticket = await User.verifyGoogleToken(token);
-                const payload = ticket.getPayload();
+                console.log('case : google');
+                const verificationResult = await User.verifyGoogleToken(token);
+
+                const payload = verificationResult.getPayload();
                 req.authValue = payload['sub'];
                 return await User.findOne({
                     email: payload.email,
@@ -198,16 +203,17 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                 });
 
             case 'facebook':
-                console.log('findByToken() : facebook');
-                const authRes = await User.verifyFacebookToken(token);
-                req.authValue = authRes.id;
+                console.log('case : facebook');
+                const verificationResult = await User.verifyFacebookToken(token);
+
+                req.authValue = verificationResult.id;
                 return await User.findOne({
-                    email: authRes.email,
+                    email: verificationResult.email,
                     provider,
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
-                break;
+
             default:
                 break;
         }

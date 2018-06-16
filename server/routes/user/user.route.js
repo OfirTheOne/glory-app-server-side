@@ -376,7 +376,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
-    logger.logMassage(LogLevel.INFO, `GET: /me`, `Entry`, req.body);
+    logger.logMassage(LogLevel.INFO, `GET: /users/me`, `Entry`, req.body);
 
     res.send({
         data: {
@@ -396,9 +396,10 @@ usersRoute.delete('/me/token', authenticate, async (req, res) => {
     var user = req.user;
     try {
         const resulte = await user.removeToken(req.token);
-        console.log(resulte);
+        logger.logMassage(LogLevel.DEBUG, `DELETE: /me/token`, `End`, resulte);
         res.send();
     } catch (e) {
+        logger.logMassage(LogLevel.ERROR, `DELETE: /me/token`, `End`, e);
         res.status(400).send(e);
     }
 

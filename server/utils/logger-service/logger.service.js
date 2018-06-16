@@ -22,8 +22,12 @@ const writeDatabase = async (logLevel, source, position, message) => {
     }
 }
 
-const writeConsole = async (logLevel, message) => {
-    console.log(`logLeve : ${logLevel}, message : ${message} .`);
+const writeConsole = async (logLevel, source, position, message) => {
+    console.log('\n');
+    console.log(`log level : ${logLevel}`);
+    console.log(`source : ${source}`);
+    console.log(`message : ${message}`);
+    position? console.log(`position : ${position}`) : 0;
 }
 
 const writeFile = async (logLevel, message) => { }
