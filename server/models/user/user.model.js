@@ -178,7 +178,7 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
     try {
 
         switch (provider) {
-            case 'custom':
+            case 'custom': {
                 console.log('case : custom');
                 const verificationResult = await User.verifyCustomToken(token);
 
@@ -188,8 +188,9 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
+            }
 
-            case 'google':
+            case 'google': {
                 console.log('case : google');
                 const verificationResult = await User.verifyGoogleToken(token);
 
@@ -201,8 +202,9 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
+            }
 
-            case 'facebook':
+            case 'facebook': {
                 console.log('case : facebook');
                 const verificationResult = await User.verifyFacebookToken(token);
 
@@ -213,7 +215,8 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 });
-
+            }
+            
             default:
                 break;
         }
