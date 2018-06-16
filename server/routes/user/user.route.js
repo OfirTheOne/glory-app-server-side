@@ -19,7 +19,7 @@ usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' r
 usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
 
 // set logger service object
-const logger = new Logger(LogStream.DATABASE);
+const logger = new Logger(LogStream.CONSOLE);
 
 
 /********* routes *********/
@@ -376,7 +376,10 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
-    logger.logMassage(LogLevel.INFO, `GET: /users/me`, `Entry`, req.body);
+    logger.logMassage(LogLevel.INFO, `GET: /users/me`, `Entry`, {
+        user: req.user, 
+        authValue: req.authValue
+    });
 
     res.send({
         data: {

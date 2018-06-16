@@ -173,7 +173,7 @@ UserSchema.statics.findByCredentials = async function (email, password) {
 UserSchema.statics.findByToken = async function (req, token, provider) {
     console.log('method : findByToken(req, token, provider)');
     console.log(`params :\n req - ${req},\n token - ${token},\n provider - ${provider} \n`);
-    
+
     const User = this;
     try {
 
@@ -237,6 +237,9 @@ UserSchema.statics.verifyCustomToken = async function (token) {
 };
 
 UserSchema.statics.verifyGoogleToken = async function (token) {
+    console.log('method : verifyGoogleToken(token)');
+    console.log(`params :\n token - ${token} \n`);
+
     const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
     let ticket;
     try {
@@ -244,6 +247,7 @@ UserSchema.statics.verifyGoogleToken = async function (token) {
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID
         });
+        console.log(ticket);
         return ticket;
     } catch (e) {
         throw e;
