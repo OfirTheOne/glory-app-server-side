@@ -428,7 +428,9 @@ const validateCustomSignRequest = (reqBody) => {
 }
 
 /** validation 
- * @param {Object} data validate that if a field exists it's value valide.
+ * @description - validate that if a field exists is value valide.
+ * @param {Object} data - contains fileds : firstName, lastName, birthDate and gender.
+ *
  * @returns true if all the existed fileds are valide.
  */
 const validateUserData = (data) => {
@@ -452,6 +454,7 @@ const validateUserData = (data) => {
             return false;
         }
     }
+    return true;
 }
 
 /** validation 
