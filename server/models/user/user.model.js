@@ -139,7 +139,7 @@ UserSchema.methods.setPersonalData = async function (data) {
     try {
         return await user.update({
             $set: {
-                personalData: { data }
+                personalData:  data 
             }
         });
     } catch (e) {
@@ -216,7 +216,7 @@ UserSchema.statics.findByToken = async function (req, token, provider) {
                     'tokens.access': 'auth'
                 });
             }
-            
+
             default:
                 break;
         }

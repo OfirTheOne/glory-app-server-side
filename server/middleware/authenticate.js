@@ -1,6 +1,8 @@
 const { User } = require('../models/user/user.model');
 
 const authenticate = async (req, res, next) => {
+    console.log('method : authenticate(req, res, next)');
+
     const token = req.header('x-auth');
     const provider = req.header('x-provider');
   
@@ -8,11 +10,12 @@ const authenticate = async (req, res, next) => {
         const user = await User.findByToken(req, token, provider);
        
         if (!user) {
+            console.log('(from - authenticate) cant find user');
             throw new Error('cant find user');
         }
         req.user = user;
         req.token = token;
-        console.log('end authenticate middleware');
+        console.log('(from - authenticate) end authenticate middleware');
         next();
 
     } catch (e) {

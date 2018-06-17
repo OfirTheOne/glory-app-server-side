@@ -159,19 +159,19 @@ usersRoute.post('/g', async (req, res) => {
     try {
         ticket = await User.verifyGoogleToken(idToken);
     } catch (e) {
-        return res.status(400).send(e);
+        return res.status(400).send(new Error('token validetion failed.'));
     }
 
 
 
     // ****** Position 2 ****** // - find user obj
     // ******************************************************************* //
-    /*
-    * the payload object contains : 
-    *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
-    *  email?: string;  profile?: string;  picture?: string;  name?: string;  given_name?: string;
-    *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
-    * */
+        /*
+        * the payload object contains : 
+        *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
+        *  email?: string;  profile?: string;  picture?: string;  name?: string;  given_name?: string;
+        *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
+        * */
 
     const payload = ticket.getPayload();
     const email = payload['email'];
