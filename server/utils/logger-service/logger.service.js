@@ -13,7 +13,12 @@ const LogStream = {
 }
 
 const writeDatabase = async (logLevel, source, position, message) => {
-    const log = new Log({ logLevel, source, position, message });
+    const log = new Log({ 
+        logLevel, 
+        source, 
+        position, 
+        message: (message ? message : "")
+    });
 
     try {
         const logDoc = await log.save();
@@ -24,10 +29,8 @@ const writeDatabase = async (logLevel, source, position, message) => {
 
 const writeConsole = async (logLevel, source, position, message) => {
     console.log('\n');
-    console.log(`log level : ${logLevel}`);
-    console.log(`source : ${source}`);
-    console.log(`message : ${message}`);
-    position? console.log(`position : ${position}`) : 0;
+    console.log(`${logLevel}:  ${source} || ${position}`);
+    message? console.log(`message : ${message}`) : 0;
 }
 
 const writeFile = async (logLevel, message) => { }
@@ -83,6 +86,11 @@ class Logger {
 
         }
     };
+    
+    async raiseFlag(sourceMethod, position) {
+        await this.writeMethod(LogLevel.INFO, sourceMethod, position, 'raiseFlag');
+    };
+
 }
 
 

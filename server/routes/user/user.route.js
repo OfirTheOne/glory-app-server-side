@@ -29,7 +29,7 @@ const logger = new Logger(LogStream.CONSOLE);
  * Route for signup / signin user with facebook
  * */
 usersRoute.post('/f', async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/f`, `Entry`, req.body);
+    logger.raiseFlag(`POST: /users/f`, `Enter`);
 
     const idToken = req.body['idToken'];
     const provider = 'facebook';
@@ -39,11 +39,8 @@ usersRoute.post('/f', async (req, res) => {
     let authTokenRes;
     try {
         authTokenRes = await User.verifyFacebookToken(idToken);
-        logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `Verifing idToken - authTokenRes :`, authTokenRes);
 
-        console.log(JSON.stringify(authTokenRes, undefined, 2));
     } catch (e) {
-        logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `Verifing idToken`, e);
         return res.status(400).send(e);
     }
 
@@ -57,34 +54,27 @@ usersRoute.post('/f', async (req, res) => {
     let user;
     try {
         user = await User.findUserByEmail(email);
-        logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `Find user obj - user :`, user);
 
     } catch (e) {
         // there is no user with that email
-        logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `Find user obj`, e);
         console.log(e);
     }
 
 
     // ****** Position 3 ****** // - Handeling two cases : SIGNIN & SIGNUP
     // ******************************************************************* //
-    console.log(`step 3`);
     if (user) {  
         // SIGN-IN
-        console.log(`step 3 - SIGN-IN`);
-        logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-IN`, '');
 
         // if the user exists in the db 
         if (user.provider != provider) {
             // if the email exists but with other provider than facebook,
             // the user allready sign up with the same email but using google or custom
-            return res.status(400).send('user email dont match the provider');
+            return res.status(400).send('user email provider dont match the db provider');
         }
 
         try {
             await user.addToken(idToken);
-            logger.logMassage(LogLevel.DEBUG, `POST: /users/f`, `End, SIGN-IN`, '');
-            console.log(`finished step 3 - SIGN-IN`);
 
             res.status(200).send({
                 data: {
@@ -94,13 +84,11 @@ usersRoute.post('/f', async (req, res) => {
                 }
             });
         } catch (e) {
-            logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `End, SIGN-IN`, e);
             console.log(e);
         }
     }
     else { 
         // SIGN-UP
-        logger.logMassage(LogLevel.INFO, `POST: /users/f`, `SIGN-UP`, '');
         console.log(`step 3 - SIGN-UP`);
 
         // if the user dont exists in the db 
@@ -123,6 +111,7 @@ usersRoute.post('/f', async (req, res) => {
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
+            logger.raiseFlag(`POST: /users/f`, `Exit`);
             res.status(200).send({
                 data: {
                     signup: true,
@@ -131,7 +120,6 @@ usersRoute.post('/f', async (req, res) => {
                 }
             });
         } catch (e) {
-            logger.logMassage(LogLevel.ERROR, `POST: /users/f`, `End, SIGN-UP`, e);
             res.status(400).send(e);
         }
     }
@@ -149,7 +137,7 @@ usersRoute.post('/f', async (req, res) => {
  *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
  * */
 usersRoute.post('/g', async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/g`, `Entry`, req);
+    logger.raiseFlag(`POST: /users/g`, `Enter`);
     const idToken = req.body['idToken'];
     const provider = 'google';
 
@@ -255,7 +243,7 @@ usersRoute.post('/g', async (req, res) => {
  *  }
  * */
 usersRoute.post('/c', async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/c`, `Entry`, req.body);
+    logger.raiseFlag(`POST: /users/c`, `Enter`);
 
     // **** 1 **** - validateion of the req body
     if (!validateCustomSignRequest(req.body)) {
@@ -354,13 +342,15 @@ usersRoute.post('/c', async (req, res) => {
  * Route for submiting user data
  * */
 usersRoute.post('/data', authenticate, async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /users/data`, `Entry`, req.body);
+    logger.raiseFlag(`POST: /users/data`, `Enter`);
 
     const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
     if (validateUserData(req.body)) {
         const user = req.user;
         try {
             await user.setPersonalData(data);
+
+            logger.raiseFlag(`POST: /users/data`, `Exit`);
             res.send();
         } catch (e) {
             console.log(e);
@@ -376,11 +366,9 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
-    logger.logMassage(LogLevel.INFO, `GET: /users/me`, `Entry`, {
-        user: req.user, 
-        authValue: req.authValue
-    });
+    logger.raiseFlag(`GET: /users/me`, `Enter`);
 
+    logger.raiseFlag(`GET: /users/me`, `Exit`);
     res.send({
         data: {
             authValue: req.authValue,
@@ -395,7 +383,7 @@ usersRoute.get('/me', authenticate, (req, res) => {
  * x-auth token (that in the header) from the token array and edding the newToken that in the body.
  * */
 usersRoute.post('/me/token', authenticate, async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `POST: /me/token`, `Entry`, req.body);
+    logger.raiseFlag(`POST: /me/token`, `Enter`);
 
     var user = req.user;
     const provider = req.header('x-provider');
@@ -437,26 +425,22 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
         }
     } catch (e) {
         console.log(e);
-        console.log('token validation failed.1');
-        return res.status(401).send('token validation failed.');
+        console.log('token validation failed.');
+        return res.status(401).send(e);
     }
     
-    if(!userEmail) {
-        console.log(e);
-        console.log('token validation failed.2');
-        return res.status(401).send('token validation failed.');
+    if(!userEmail || !authValue) {
+        console.log('token validation failed.');
+        return res.status(401).send(e);
     }
 
-    console.log(userEmail);
-    console.log(authValue);
-    console.log(user.email);
-    console.log(req.authValue);
     // the authValue check is for security purposes. 
     if(user.email == userEmail && req.authValue == authValue) {
         try {
             await user.removeToken(curToken);
             await user.addToken(newToken);
-            console.log('end POST: /me/token');
+
+            logger.raiseFlag(`POST: /me/token`, `Exit`);
             return res.status(200).send({
                 data: {
                     authValue,
@@ -465,11 +449,13 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 }
             });
         } catch (e) {
-            return res.status(401).send('token swaping failed.');
+            console.log('token swaping failed.');
+            return res.status(401).send(e);
         }
 
     } else {
-        return res.status(401).send('oldtoken and newtoken not matched.');
+        console.log('oldtoken and newtoken not matched.');
+        return res.status(401).send();
     }
 })
 
@@ -478,15 +464,15 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
  * Route for deleting token / signout user
  * */
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
-    logger.logMassage(LogLevel.INFO, `DELETE: /me/token`, `Entry`, req.body);
+    logger.raiseFlag(`DELETE: /me/token`, `Enter`);
 
     var user = req.user;
     try {
         const resulte = await user.removeToken(req.token);
-        logger.logMassage(LogLevel.DEBUG, `DELETE: /me/token`, `End`, resulte);
+
+        logger.raiseFlag(`DELETE: /me/token`, `Exit`);
         res.send();
     } catch (e) {
-        logger.logMassage(LogLevel.ERROR, `DELETE: /me/token`, `End`, e);
         res.status(400).send(e);
     }
 
