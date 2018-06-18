@@ -449,10 +449,10 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
 
     console.log(userEmail);
     console.log(authValue);
-    console.log(user.userEmail);
-    console.log(user.authValue);
+    console.log(user.email);
+    console.log(req.authValue);
     // the authValue check is for security purposes. 
-    if(user.email == userEmail && user.authValue == authValue) {
+    if(user.email == userEmail && req.authValue == authValue) {
         try {
             await user.removeToken(curToken);
             await user.addToken(newToken);
@@ -469,7 +469,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
         }
 
     } else {
-        return res.status(401).send('email pulled from the new token not matched the user email.');
+        return res.status(401).send('oldtoken and newtoken not matched.');
     }
 })
 
