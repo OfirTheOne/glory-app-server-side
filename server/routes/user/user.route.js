@@ -413,7 +413,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 const verificationResult = await User.verifyCustomToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = "";
-                
+                break;
             }
             
             case 'google': {
@@ -422,7 +422,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 const payload = verificationResult.getPayload();
                 userEmail = payload.email;
                 authValue = payload['sub'];
-            
+                break;
             }
             
             case 'facebook': {
@@ -430,7 +430,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 const verificationResult = await User.verifyFacebookToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = verificationResult.id;
-                
+                break;
             }
 
             default:  break;
