@@ -390,8 +390,88 @@ usersRoute.get('/me', authenticate, (req, res) => {
     });
 });
 
+/** POST: /users/me/token 
+ * Route for renew token with a new one (case of transparent sigin) / removing the 
+ * x-auth token (that in the header) from the token array and edding the newToken that in the body.
+ * */
+usersRoute.post('/me/token', authenticate, async (req, res) => {
+    logger.logMassage(LogLevel.INFO, `POST: /me/token`, `Entry`, req.body);
+
+    var user = req.user;
+    const provider = req.header('x-provider');
+    const curToken = req.token;
+    const newToken = req.body.newToken;
+    let userEmail;
+    let authValue;
+    
+    // validate the newToken by the x-provider and pulling the email from the validation result.
+    try {
+        
+        switch (provider) {
+            case 'custom': {
+                console.log('case : custom');
+                const verificationResult = await User.verifyCustomToken(token);
+                userEmail = verificationResult.email;
+                authValue = "";
+                
+            }
+            
+            case 'google': {
+                console.log('case : google');
+                const verificationResult = await User.verifyGoogleToken(token);
+                const payload = verificationResult.getPayload();
+                userEmail = payload.email;
+                authValue = payload['sub'];
+            
+            }
+            
+            case 'facebook': {
+                console.log('case : facebook');
+                const verificationResult = await User.verifyFacebookToken(token);
+                userEmail = verificationResult.email;
+                authValue = verificationResult.id;
+                
+            }
+
+            default:  break;
+        }
+    } catch (e) {
+        return res.status(401).send(new Error('token validation failed.'));
+    }
+    
+    if(!userEmail) {
+        return res.status(401).send(new Error('token validation failed.'));
+    }
+
+    console.log(userEmail);
+    console.log(authValue);
+    // the authValue check is for security purposes. 
+    if(user.email == userEmail && user.authValue == authValue) {
+        try {
+            await user.removeToken(curToken);
+            await user.addToken(newToken);
+            console.log('end POST: /me/token');
+            return res.status(200).send({
+                data: {
+                    authValue,
+                    user,
+                    dataDefined: isUserDataDefined(user)
+                }
+            });
+        } catch (e) {
+            return res.status(401).send(new Error('token swaping failed.'));
+        }
+
+    } else {
+        return res.status(401).send(new Error('email pulled from the new token not matched the user email.'));
+    }
+
+    
+})
+
+
 /** DELETE: /users/me/token 
- * Route for deltng token / signout user
+ * Route for deleting token / signout user
  * */
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
     logger.logMassage(LogLevel.INFO, `DELETE: /me/token`, `Entry`, req.body);
