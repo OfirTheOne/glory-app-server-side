@@ -410,7 +410,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
         switch (provider) {
             case 'custom': {
                 console.log('case : custom');
-                const verificationResult = await User.verifyCustomToken(token);
+                const verificationResult = await User.verifyCustomToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = "";
                 
@@ -418,7 +418,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             
             case 'google': {
                 console.log('case : google');
-                const verificationResult = await User.verifyGoogleToken(token);
+                const verificationResult = await User.verifyGoogleToken(newToken);
                 const payload = verificationResult.getPayload();
                 userEmail = payload.email;
                 authValue = payload['sub'];
@@ -427,7 +427,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             
             case 'facebook': {
                 console.log('case : facebook');
-                const verificationResult = await User.verifyFacebookToken(token);
+                const verificationResult = await User.verifyFacebookToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = verificationResult.id;
                 
@@ -436,10 +436,14 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             default:  break;
         }
     } catch (e) {
+        console.log(e);
+        console.log('token validation failed.1');
         return res.status(401).send(new Error('token validation failed.'));
     }
     
     if(!userEmail) {
+        console.log(e);
+        console.log('token validation failed.2');
         return res.status(401).send(new Error('token validation failed.'));
     }
 
