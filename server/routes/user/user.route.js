@@ -438,17 +438,19 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
     } catch (e) {
         console.log(e);
         console.log('token validation failed.1');
-        return res.status(401).send(new Error('token validation failed.'));
+        return res.status(401).send('token validation failed.');
     }
     
     if(!userEmail) {
         console.log(e);
         console.log('token validation failed.2');
-        return res.status(401).send(new Error('token validation failed.'));
+        return res.status(401).send('token validation failed.');
     }
 
     console.log(userEmail);
     console.log(authValue);
+    console.log(user.userEmail);
+    console.log(user.authValue);
     // the authValue check is for security purposes. 
     if(user.email == userEmail && user.authValue == authValue) {
         try {
@@ -463,14 +465,12 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 }
             });
         } catch (e) {
-            return res.status(401).send(new Error('token swaping failed.'));
+            return res.status(401).send('token swaping failed.');
         }
 
     } else {
-        return res.status(401).send(new Error('email pulled from the new token not matched the user email.'));
+        return res.status(401).send('email pulled from the new token not matched the user email.');
     }
-
-    
 })
 
 
