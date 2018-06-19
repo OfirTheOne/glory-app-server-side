@@ -1,9 +1,11 @@
 const { Log } = require('../../models/log/log.model');
 
+/*********** Enums ***********/
 const LogLevel = {
     ERROR: 'error',
     INFO: 'info',
-    DEBUG: 'debug'
+    DEBUG: 'debug',
+    WARN: 'warn'
 }
 
 const LogStream = {
@@ -11,13 +13,28 @@ const LogStream = {
     FILE: 'file',
     DATABASE: 'database'
 }
+/*****************************/
 
-const writeDatabase = async (logLevel, source, position, message) => {
+const objToString = (obj) => {
+    let objStringify = '';
+    if (typeof obj != "string") {
+        try {
+            objStringify = JSON.stringify(obj);
+        } catch(e) {
+            console.log(e);
+            objStringify = 'cyclic object value'; // in case of cyclic object value
+        }
+    }
+    return objStringify
+}
+
+/*********** Stream write methods ***********/
+const writeDatabase = async (level, source, message, options = undefined) => {
     const log = new Log({ 
-        logLevel, 
+        logLevel: level, 
         source, 
-        position, 
-        message: (message ? message : "")
+        message: (message ? message : ""),
+        position: (options ? options.position: ""), 
     });
 
     try {
@@ -27,14 +44,20 @@ const writeDatabase = async (logLevel, source, position, message) => {
     }
 }
 
-const writeConsole = async (logLevel, source, position, message) => {
+const writeConsole = async (level, source, message, options = undefined) => {
     console.log('\n');
-    console.log(`${logLevel}:  ${source} || ${position}`);
-    message? console.log(`message : ${message}`) : 0;
+
+    console.log(`${level}: (source) ${source} : ${message}`);
+    if(options) {
+        options.position ? console.log(`${ options.position},`): null;
+        options.params ? console.log(`${ objToString(options.params)}`): null;
+    }
+    
 }
 
-const writeFile = async (logLevel, message) => { }
+const writeFile = async (level, source, message, options = undefined) => { }
 
+/********************************************/
 
 
 class Logger {
@@ -64,33 +87,41 @@ class Logger {
         }
     };
 
-    async logMassage(logLevel, source, position, message) {
+
+
+    async log(level, source, message, options) {
         let messageStringify;
+        
         if (this.writeMethod == undefined) {
             this.setWriteStream();
         }
-
-        if (typeof message != "string") {
-            try {
-                messageStringify = JSON.stringify(message);
-            } catch(e) {
-                console.log(e);
-                messageStringify = ''; // in case of cyclic object value
-            }
-        }
-
+        
+        messageStringify = objToString(message);
+        
         try {
-            await this.writeMethod(logLevel, source, position, messageStringify);
+            await this.writeMethod(level, source, messageStringify, options);
         } catch (e) {
             console.log(e);
 
         }
     };
     
-    async raiseFlag(sourceMethod, position) {
-        await this.writeMethod(LogLevel.INFO, sourceMethod, position, 'raiseFlag');
-    };
+    async debug(source, message, options) {
+        await this.log( LogLevel.DEBUG, source, message, options);
+    }
 
+    async warn(source, message, options) {
+        await this.log( LogLevel.WARN, source, message, options);
+    }
+
+    async info(source, message, options) {
+        await this.log(LogLevel.INFO, source, message, options);
+    }
+
+    async error(source, message, options) {
+        await this.log( LogLevel.ERROR, source, message, options);
+    }
+ 
 }
 
 

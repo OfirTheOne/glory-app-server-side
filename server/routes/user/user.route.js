@@ -2,11 +2,10 @@
 const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
-const { ObjectID } = require('mongodb');
-const { Logger, LogLevel, LogStream } = require('../../utils/logger-service/logger.service');
+const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 
 // mongoose models
-const { User, USER_PROVIDERS } = require('../../models/user/user.model');
+const { User } = require('../../models/user/user.model');
 const { Cart } = require('../../models/cart/cart.model');
 
 // middleware
@@ -29,7 +28,7 @@ const logger = new Logger(LogStream.CONSOLE);
  * Route for signup / signin user with facebook
  * */
 usersRoute.post('/f', async (req, res) => {
-    logger.raiseFlag(`POST: /users/f`, `Enter`);
+    logger.info(`POST: /users/f`, `Enter`);
 
     const idToken = req.body['idToken'];
     const provider = 'facebook';
@@ -41,6 +40,7 @@ usersRoute.post('/f', async (req, res) => {
         authTokenRes = await User.verifyFacebookToken(idToken);
 
     } catch (e) {
+        logger.error(`POST: /users/f`, `verifyFacebookToken failed.`, {params: {error: e}});
         return res.status(400).send(e);
     }
 
@@ -57,6 +57,9 @@ usersRoute.post('/f', async (req, res) => {
 
     } catch (e) {
         // there is no user with that email
+        logger.error(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.`, {
+            params: {error: e}
+        });
         console.log(e);
     }
 
@@ -70,6 +73,7 @@ usersRoute.post('/f', async (req, res) => {
         if (user.provider != provider) {
             // if the email exists but with other provider than facebook,
             // the user allready sign up with the same email but using google or custom
+            logger.warn(`POST: /users/f`, `user email provider dont match the db provider.`);
             return res.status(400).send('user email provider dont match the db provider');
         }
 
@@ -111,7 +115,7 @@ usersRoute.post('/f', async (req, res) => {
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
-            logger.raiseFlag(`POST: /users/f`, `Exit`);
+            logger.info(`POST: /users/f`, `Exit`);
             res.status(200).send({
                 data: {
                     signup: true,
@@ -137,7 +141,7 @@ usersRoute.post('/f', async (req, res) => {
  *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
  * */
 usersRoute.post('/g', async (req, res) => {
-    logger.raiseFlag(`POST: /users/g`, `Enter`);
+    logger.info(`POST: /users/g`, `Enter`);
     const idToken = req.body['idToken'];
     const provider = 'google';
 
@@ -147,6 +151,7 @@ usersRoute.post('/g', async (req, res) => {
     try {
         ticket = await User.verifyGoogleToken(idToken);
     } catch (e) {
+        logger.error(`POST: /users/f`, `verifyGoogleToken failed.`, {params: {error: e}});
         return res.status(400).send(new Error('token validetion failed.'));
     }
 
@@ -243,7 +248,7 @@ usersRoute.post('/g', async (req, res) => {
  *  }
  * */
 usersRoute.post('/c', async (req, res) => {
-    logger.raiseFlag(`POST: /users/c`, `Enter`);
+    logger.info(`POST: /users/c`, `Enter`);
 
     // **** 1 **** - validateion of the req body
     if (!validateCustomSignRequest(req.body)) {
@@ -258,6 +263,7 @@ usersRoute.post('/c', async (req, res) => {
         user = User.findUserByEmail(email);
     } catch (e) {
         // there is no user with that email
+        logger.error(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.s`, {params: {error: e}});
         console.log(e);
     }
 
@@ -342,7 +348,7 @@ usersRoute.post('/c', async (req, res) => {
  * Route for submiting user data
  * */
 usersRoute.post('/data', authenticate, async (req, res) => {
-    logger.raiseFlag(`POST: /users/data`, `Enter`);
+    logger.info(`POST: /users/data`, `Enter`);
 
     const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
     if (validateUserData(req.body)) {
@@ -350,13 +356,18 @@ usersRoute.post('/data', authenticate, async (req, res) => {
         try {
             await user.setPersonalData(data);
 
-            logger.raiseFlag(`POST: /users/data`, `Exit`);
+            logger.info(`POST: /users/data`, `Exit`);
             res.send();
         } catch (e) {
-            console.log(e);
+            logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
+                params: { user, error:  e }
+            });
             res.status(400).send(e);
         }
     } else {
+        logger.warn(`POST: /users/data`, `validateUserData return false.`, {
+            params: { user }
+        });
         res.status(400).send('user data invalid.');
     }
 
@@ -366,9 +377,9 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * Route for getting user by a token / the user object of the logged user
  * */
 usersRoute.get('/me', authenticate, (req, res) => {
-    logger.raiseFlag(`GET: /users/me`, `Enter`);
+    logger.info(`GET: /users/me`, `Enter`);
 
-    logger.raiseFlag(`GET: /users/me`, `Exit`);
+    logger.info(`GET: /users/me`, `Exit`);
     res.send({
         data: {
             authValue: req.authValue,
@@ -383,7 +394,7 @@ usersRoute.get('/me', authenticate, (req, res) => {
  * x-auth token (that in the header) from the token array and edding the newToken that in the body.
  * */
 usersRoute.post('/me/token', authenticate, async (req, res) => {
-    logger.raiseFlag(`POST: /me/token`, `Enter`);
+    logger.info(`POST: /me/token`, `Enter`);
 
     var user = req.user;
     const provider = req.header('x-provider');
@@ -391,13 +402,17 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
     const newToken = req.body.newToken;
     let userEmail;
     let authValue;
+
+    logger.info(`POST: /me/token`, `setting local vars.`, {
+        params: { user }
+    });
     
     // validate the newToken by the x-provider and pulling the email from the validation result.
     try {
         
         switch (provider) {
             case 'custom': {
-                console.log('case : custom');
+                logger.info(`POST: /me/token`, `entered case custom.`);
                 const verificationResult = await User.verifyCustomToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = "";
@@ -405,7 +420,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             }
             
             case 'google': {
-                console.log('case : google');
+                logger.info(`POST: /me/token`, `entered case google.`);
                 const verificationResult = await User.verifyGoogleToken(newToken);
                 const payload = verificationResult.getPayload();
                 userEmail = payload.email;
@@ -414,7 +429,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             }
             
             case 'facebook': {
-                console.log('case : facebook');
+                logger.info(`POST: /me/token`, `entered case facebook.`);
                 const verificationResult = await User.verifyFacebookToken(newToken);
                 userEmail = verificationResult.email;
                 authValue = verificationResult.id;
@@ -424,14 +439,15 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             default:  break;
         }
     } catch (e) {
-        console.log(e);
-        console.log('token validation failed.');
+        logger.error(`POST: /me/token`, `token validation failed.`, { params: {error : e}});
         return res.status(401).send(e);
     }
     
     if(!userEmail || !authValue) {
-        console.log('token validation failed.');
-        return res.status(401).send(e);
+        logger.warn(`POST: /me/token`, `userEmail or authValue undefined.`, { 
+            params: { userEmail ,authValue }
+        });
+        return res.status(401).send();
     }
 
     // the authValue check is for security purposes. 
@@ -440,7 +456,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
             await user.removeToken(curToken);
             await user.addToken(newToken);
 
-            logger.raiseFlag(`POST: /me/token`, `Exit`);
+            logger.info(`POST: /me/token`, `Exit`);
             return res.status(200).send({
                 data: {
                     authValue,
@@ -449,12 +465,12 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 }
             });
         } catch (e) {
-            console.log('token swaping failed.');
+            logger.error(`POST: /me/token`, `token swaping failed.`, { params: {error: e} });
             return res.status(401).send(e);
         }
 
     } else {
-        console.log('oldtoken and newtoken not matched.');
+        logger.warn(`POST: /me/token`, `oldtoken and newtoken not matched.`);
         return res.status(401).send();
     }
 })
@@ -464,15 +480,16 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
  * Route for deleting token / signout user
  * */
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
-    logger.raiseFlag(`DELETE: /me/token`, `Enter`);
+    logger.info(`DELETE: /me/token`, `Enter`);
 
     var user = req.user;
     try {
         const resulte = await user.removeToken(req.token);
 
-        logger.raiseFlag(`DELETE: /me/token`, `Exit`);
+        logger.info(`DELETE: /me/token`, `Exit`);
         res.send();
     } catch (e) {
+        logger.error(`DELETE: /me/token`, `removeToken failed.`, { params: {error: e} });
         res.status(400).send(e);
     }
 
