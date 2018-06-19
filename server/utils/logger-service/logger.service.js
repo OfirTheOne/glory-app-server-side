@@ -24,8 +24,10 @@ const objToString = (obj) => {
             console.log(e);
             objStringify = 'cyclic object value'; // in case of cyclic object value
         }
+    } else {
+        objStringify = obj;
     }
-    return objStringify
+    return objStringify;
 }
 
 /*********** Stream write methods ***********/
