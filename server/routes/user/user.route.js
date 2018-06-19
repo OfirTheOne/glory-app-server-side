@@ -350,13 +350,15 @@ usersRoute.post('/c', async (req, res) => {
 usersRoute.post('/data', authenticate, async (req, res) => {
     logger.info(`POST: /users/data`, `Enter`);
 
-    const data = _.pick(req.body, ['lastName', 'firstName', 'birthDate', 'gender'])
+    const data = _.pick(req.body.data, ['lastName', 'firstName', 'birthDate', 'gender']);
+    logger.info(`POST: /users/data`, ``, { params : { data }});
+    
     if (validateUserData(req.body)) {
         const user = req.user;
         try {
             await user.setPersonalData(data);
 
-            logger.info(`POST: /users/data`, `Exit`);
+            logger.info(`POST: /users/data`, `Exit`, { params: { user } });
             res.send();
         } catch (e) {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
@@ -504,7 +506,7 @@ module.exports = {
 /********* validators *********/
 
 /** validation 
- * @param {*} reqBody 
+ * @param {Object} reqBody 
  */
 const validateCustomSignRequest = (reqBody) => {
     if ((reqBody.email == undefined || reqBody.email == null) || (reqBody.password == undefined || reqBody.password == null)) {
