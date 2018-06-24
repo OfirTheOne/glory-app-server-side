@@ -9,7 +9,7 @@ const authenticate = async (req, res, next) => {
     const provider = req.header('x-provider');
   
     try {
-        const user = await User.findByToken(req, token, provider);
+        const user = await User.findByTokenVerification(req, token, provider);
        
         if (!user) {
             logger.warn(`authenticate(req, res, next)`, `cant find user`, { params: { token, provider }});
@@ -17,7 +17,7 @@ const authenticate = async (req, res, next) => {
         }
         req.user = user;
         req.token = token;
-        
+
         logger.info(`authenticate(req, res, next)`, `Exit`, { params: { user }});
         next();
 
@@ -41,7 +41,7 @@ const authenticateAdmin = async (req, res, next) => {
     const provider = req.header('x-provider');
 
     try {
-        const user = await User.findByToken(req, token, provider);
+        const user = await User.findByTokenVerification(req, token, provider);
 
         if (!user || user.roll !== 2) {
             throw new Error('cant find user or the user is not an admin');
