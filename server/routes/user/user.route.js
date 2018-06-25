@@ -359,7 +359,12 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             await user.setPersonalData(data);
 
             logger.info(`POST: /users/data`, `Exit`, { params: { user } });
-            res.send();
+            res.send({
+                data: {
+                    user, 
+                    authValue: req.authValue,
+                }
+            });
         } catch (e) {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
                 params: { user, error:  e }
