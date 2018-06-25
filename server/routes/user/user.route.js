@@ -356,12 +356,12 @@ usersRoute.post('/data', authenticate, async (req, res) => {
     if (validateUserData(req.body)) {
         const user = req.user;
         try {
-            const updatedUser = await user.setPersonalData(data);
-
-            logger.info(`POST: /users/data`, `Exit`, { params: { updatedUser } });
+            await user.setPersonalData(data);
+            await user.save();
+            logger.info(`POST: /users/data`, `Exit`, { params: { user } });
             res.send({
                 data: {
-                    user: updatedUser, 
+                    user, 
                     authValue: req.authValue,
                 }
             });
