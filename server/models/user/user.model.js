@@ -187,6 +187,7 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                     'tokens.token': token,
                     'tokens.access': 'auth'
                 };
+                break;
             }
 
             case 'google': {
@@ -197,6 +198,7 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                     email: payload.email,
                     provider
                 };
+                break;
             }
 
             case 'facebook': {
@@ -207,6 +209,7 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                     email: verificationResult.email,
                     provider
                 };
+                break;
             }
 
             default: break;
@@ -237,16 +240,19 @@ UserSchema.statics.verifyToken = async function (provider, token) {
             case 'custom': {
                 console.log('case : custom');
                 verificationResult = await User.verifyCustomToken(token);
+                break;
             }
 
             case 'google': {
                 console.log('case : google');
                 verificationResult = await User.verifyGoogleToken(token);
+                break;
             }
 
             case 'facebook': {
                 console.log('case : facebook');
                 verificationResult = await User.verifyFacebookToken(token);
+                break;
             }
 
             default:
