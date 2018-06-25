@@ -356,21 +356,31 @@ usersRoute.post('/data', authenticate, async (req, res) => {
     if (validateUserData(req.body)) {
         const user = req.user;
         try {
-            await user.setPersonalData(data);
-            await user.save();
-            logger.info(`POST: /users/data`, `Exit`, { params: { user } });
-            res.send({
-                data: {
-                    user, 
-                    authValue: req.authValue,
-                }
-            });
+            await user.setPersonalData(data);    
         } catch (e) {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
                 params: { user, error:  e }
             });
             res.status(400).send(e);
         }
+
+        try {
+            await user.save();
+            logger.info(`POST: /users/data`, `Exit`, { params: { user } });
+        } catch(e) {
+            logger.error(`POST: /users/data`, `error at user.save method.`, {
+                params: { user, error:  e }
+            });
+            res.status(400).send(e);
+        }
+
+        res.send({
+            data: {
+                user, 
+                authValue: req.authValue,
+            }
+        });
+
     } else {
         logger.warn(`POST: /users/data`, `validateUserData return false.`, {
             params: { user }
