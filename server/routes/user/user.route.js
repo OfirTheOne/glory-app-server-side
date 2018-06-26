@@ -363,17 +363,18 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             });
             return res.status(400).send(e);
         }
-
+        /*
         try {
             await user.save();
-            logger.info(`POST: /users/data`, `Exit`, { params: { user } });
+
         } catch(e) {
             logger.error(`POST: /users/data`, `error at user.save method.`, {
                 params: { user, error:  e }
             });
             return res.status(400).send(e);
         }
-
+        */
+        logger.info(`POST: /users/data`, `Exit`, { params: { user } });
         return res.send({
             data: {
                 user, 
