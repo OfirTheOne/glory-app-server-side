@@ -356,7 +356,14 @@ usersRoute.post('/data', authenticate, async (req, res) => {
     if (validateUserData(req.body)) {
         const user = req.user;
         try {
-            await user.setPersonalData(data);    
+            const updateUser = await user.setPersonalData(data);  
+            logger.info(`POST: /users/data`, `Exit`, { params: { updateUser } });
+            return res.send({
+                data: {
+                    user: updateUser, 
+                    authValue: req.authValue,
+                }
+            });  
         } catch (e) {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
                 params: { user, error:  e }
@@ -374,13 +381,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             return res.status(400).send(e);
         }
         */
-        logger.info(`POST: /users/data`, `Exit`, { params: { user } });
-        return res.send({
-            data: {
-                user, 
-                authValue: req.authValue,
-            }
-        });
+        
 
     } else {
         logger.warn(`POST: /users/data`, `validateUserData return false.`, {
