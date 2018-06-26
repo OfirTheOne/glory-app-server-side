@@ -19,7 +19,7 @@ const objToString = (obj) => {
     let objStringify = '';
     if (typeof obj != "string") {
         try {
-            objStringify = JSON.stringify(obj);
+            objStringify = JSON.stringify(obj, undefined, 2);
         } catch(e) {
             console.log(e);
             objStringify = 'cyclic object value'; // in case of cyclic object value

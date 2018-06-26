@@ -361,7 +361,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
                 params: { user, error:  e }
             });
-            res.status(400).send(e);
+            return res.status(400).send(e);
         }
 
         try {
@@ -371,10 +371,10 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             logger.error(`POST: /users/data`, `error at user.save method.`, {
                 params: { user, error:  e }
             });
-            res.status(400).send(e);
+            return res.status(400).send(e);
         }
 
-        res.send({
+        return res.send({
             data: {
                 user, 
                 authValue: req.authValue,
@@ -385,7 +385,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
         logger.warn(`POST: /users/data`, `validateUserData return false.`, {
             params: { user }
         });
-        res.status(400).send('user data invalid.');
+        return res.status(400).send('user data invalid.');
     }
 
 });
