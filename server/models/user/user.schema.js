@@ -19,25 +19,21 @@ const UserBirthDateSchema = new mongoose.Schema({
 const UserPersonalDataSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: true,
         trim: true,
         minlength: 1,
     },
     lastName: {
         type: String,
-        required: true,
         trim: true,
         minlength: 1,
     },
     gender: {
         type: String,
-        required: true,
         minlength: 1,
         validate: (value) => ['male', 'female'].includes(value)
     },
     birthDate: {
         type: UserBirthDateSchema,
-        required: true,
     },
 });
 
@@ -79,19 +75,19 @@ const UserSchema = new mongoose.Schema({
     tokens: [{
         access: {
             type: String,
-            required: true,
+            // required: true,
         },
         expDate: {
             type: Number,
-            required: true,
+            // required: true,
         },
         token: {
             type: String,
-            required: true,
+            // required: true,
         },
         deviceIp: {
             type: String,
-            required: true,
+            // required: true,
             validate: validator.isIP
         }
     }]
