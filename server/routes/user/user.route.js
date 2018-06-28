@@ -80,7 +80,7 @@ usersRoute.post('/f', async (req, res) => {
         try {
             await user.addToken(idToken);
 
-            res.status(200).send({
+            return res.status(200).send({
                 data: {
                     signin: true,
                     authValue: authTokenRes['id'],
@@ -116,7 +116,7 @@ usersRoute.post('/f', async (req, res) => {
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
             logger.info(`POST: /users/f`, `Exit`);
-            res.status(200).send({
+            return res.status(200).send({
                 data: {
                     signup: true,
                     authValue: authTokenRes['id'],
@@ -192,7 +192,7 @@ usersRoute.post('/g', async (req, res) => {
 
         try {
             await user.addToken(idToken);
-            res.status(200).send({
+            return res.status(200).send({
                 data: {
                     signin: true,
                     authValue: payload['sub'],
@@ -223,7 +223,7 @@ usersRoute.post('/g', async (req, res) => {
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
-            res.status(200).send({
+            return res.status(200).send({
                 data: {
                     signup: true,
                     authValue: payload['sub'],
@@ -263,7 +263,7 @@ usersRoute.post('/c', async (req, res) => {
         user = User.findUserByEmail(email);
     } catch (e) {
         // there is no user with that email
-        logger.error(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.s`, {params: {error: e}});
+        logger.warn(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.`, {params: {error: e}});
         console.log(e);
     }
 
@@ -287,7 +287,7 @@ usersRoute.post('/c', async (req, res) => {
             // generate token / if cant generate token --> throw Error
             const tokenData = await user.generateAuthToken(req);
             console.log(tokenData);
-            res.header('x-auth', tokenData.token).send({
+            return res.header('x-auth', tokenData.token).send({
                 data: {
                     signin: true,
                     user,
@@ -328,7 +328,7 @@ usersRoute.post('/c', async (req, res) => {
             // generate token / if cant generate token --> throw Error
             const tokenData = await user.generateAuthToken(req);
             console.log(tokenData);
-            res.header('x-auth', tokenData.token).send({
+            return res.header('x-auth', tokenData.token).send({
                 data: {
                     signup: true,
                     user,
@@ -338,7 +338,7 @@ usersRoute.post('/c', async (req, res) => {
             });
 
         } catch (e) {
-            res.status(400).send(e);
+            return res.status(400).send(e);
         }
     }
 
@@ -399,7 +399,7 @@ usersRoute.get('/me', authenticate, (req, res) => {
     logger.info(`GET: /users/me`, `Enter`);
 
     logger.info(`GET: /users/me`, `Exit`);
-    res.send({
+    return res.send({
         data: {
             authValue: req.authValue,
             user: req.user,
@@ -506,10 +506,10 @@ usersRoute.delete('/me/token', authenticate, async (req, res) => {
         const resulte = await user.removeToken(req.token);
 
         logger.info(`DELETE: /me/token`, `Exit`);
-        res.send();
+        return res.send();
     } catch (e) {
         logger.error(`DELETE: /me/token`, `removeToken failed.`, { params: {error: e} });
-        res.status(400).send(e);
+        return res.status(400).send(e);
     }
 
 })

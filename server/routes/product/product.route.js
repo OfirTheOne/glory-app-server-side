@@ -3,6 +3,7 @@ const productsRoute = require('express').Router();
 const _ = require('lodash');
 const { ObjectID } = require('mongodb');
 
+const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 // middleware
 const { authenticate } = require('../../middleware/authenticate');
 
@@ -10,20 +11,26 @@ const { authenticate } = require('../../middleware/authenticate');
 const { Product } = require('../../models/product/product.model');
 
 
+// set logger service object
+const logger = new Logger(LogStream.CONSOLE);
+
 /**
  * Route for adding a product
  */
 // POST: /products/
 productsRoute.post('/', async (req, res) => {
+    logger.info(`POST: /products`, `Enter`);
+
     const productbody = _.pick(req.body, ['pCode', 'price', 'category', 'description', 'measurement']);
     // TODO: validate productbody
     let product = new Product(productbody);
     console.log(product);
     try {
         const productDoc = await product.save();
-        res.send({data: productDoc});
+        logger.info(`POST: /products`, `Exit`,  { params: { productDoc } });
+        return res.send({data: productDoc});
     } catch (e) {
-        res.status(400).send(e);
+        return res.status(400).send(e);
     }
 });
 
@@ -32,6 +39,8 @@ productsRoute.post('/', async (req, res) => {
  */
 // DELETE: /products/:pid
 productsRoute.delete('/:pid', async (req, res) => {
+    logger.info(`DELETE: /products/:pid`, `Enter`);
+
     const { pid } = req.params;
     if (!ObjectID.isValid(pid)) {
         return res.status(400).send();
@@ -42,9 +51,9 @@ productsRoute.delete('/:pid', async (req, res) => {
         if (!product) {
             return res.status(404).send();
         }
-        res.send({data: product});
+        return res.send({data: product});
     } catch (e) {
-        res.status(400).send();
+        return res.status(400).send();
     }
 
 });
@@ -54,11 +63,14 @@ productsRoute.delete('/:pid', async (req, res) => {
  */
 // GET: /products/:pid
 productsRoute.get('/:pid', async (req, res) => {
+    logger.info(`GET: /products/:pid`, `Enter`);
+
     const { pid } = req.params;
 
     // validate product id
     if (!ObjectID.isValid(pid)) {
-        res.status(400).send();;
+        logger.warn(`GET: /products/:pid`, `product id invalid.`);
+        return res.status(400).send();
     }
 
     try {
@@ -66,13 +78,15 @@ productsRoute.get('/:pid', async (req, res) => {
         const product = await Product.findById(pid);
         // if doc not exists send 400
         if (!product) {
-            res.status(404).send();
+            logger.warn(`GET: /products/:pid`, `doc not exists`);
+            return res.status(404).send();
         }
         // success - send the doc
-        res.send({data: product});
+        return res.send({data: product});
     } catch (e) {
         // error fetching the doc - send 400
-        res.status(400).send();
+        logger.error(`GET: /products/:pid`, `error fetching the doc`, {params: {error: e}});
+        return res.status(400).send();
     }
 });
 
@@ -81,6 +95,8 @@ productsRoute.get('/:pid', async (req, res) => {
  */
 // GET: /products/cat/:category
 productsRoute.get('/cat/:category', async (req, res) => {
+    logger.info(`GET: /products/cat/:category`, `Enter`);
+
     const { category } = req.params;
 
     try {
@@ -90,13 +106,16 @@ productsRoute.get('/cat/:category', async (req, res) => {
         });
         // if doc not exists send 400
         if (!products) {
-            res.status(404).send();
+            logger.warn(`GET: /products/cat/:category`, `doc not exists`);
+            return res.status(404).send();
         }
         // success - send the doc
-        res.send({data: products});
+        logger.info(`GET: /products/cat/:category`, `Exit`, {params: {products}});
+        return res.send({data: products});
     } catch (e) {
         // error fetching the doc - send 400
-        res.status(400).send();
+        logger.error(`GET: /products/cat/:category`, `error fetching the doc`, {params: {error: e}});
+        return res.status(400).send();
     }
 });
 
@@ -105,9 +124,11 @@ productsRoute.get('/cat/:category', async (req, res) => {
  */
 // GET: /products/filter/:q
 productsRoute.get('/filter/:q', async (req, res) => {
-    
+    logger.info(`GET: /products/filter/:q`, `Enter`);
+
     // --1-- validate the query params 
     if(!valideteFilterRequest(req)) {
+        logger.warn(`GET: /products/filter/:q`, `invalid query params`);
         return res.status(400).send('invalid query params ');
     }
 
@@ -150,13 +171,16 @@ productsRoute.get('/filter/:q', async (req, res) => {
 
         // if doc not exists send 400
         if (!products) {
-            res.status(404).send('doc not exists');
+            logger.warn(`GET: /products/filter/:q`, `doc not exists`);
+            return res.status(404).send('doc not exists');
         }
         // success - send the doc
-        res.send({data: products});
+        logger.info(`GET: /products/filter/:q`, `Exit`, {params: {products}});
+        return res.send({data: products});
     } catch (e) {
         // error fetching the doc - send 400
-        res.status(400).send('error fetching the doc');
+        logger.error(`GET: /products/filter/:q`, `error fetching the doc`, {params: {error: e}});
+        return res.status(400).send('error fetching the doc');
     }
 });
 
