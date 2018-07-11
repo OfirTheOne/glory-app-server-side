@@ -21,7 +21,7 @@ const logger = new Logger(LogStream.CONSOLE);
 productsRoute.post('/', async (req, res) => {
     logger.info(`POST: /products`, `Enter`);
 
-    const productbody = _.pick(req.body, ['pCode', 'price', 'category', 'description', 'measurement']);
+    const productbody = _.pick(req.body, ['pCode', 'price', 'category', 'description', 'measurement', 'imagePath']);
     // TODO: validate productbody
     let product = new Product(productbody);
     console.log(product);
