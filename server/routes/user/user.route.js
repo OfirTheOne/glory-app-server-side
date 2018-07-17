@@ -220,7 +220,7 @@ usersRoute.post('/g', async (req, res) => {
         try {
             // user.authData.email = email;
             // user.authData.provider = provider;
-            // await user.save();
+            await user.save();
             console.log('HERE 0000001')
             await user.setPersonalData({
                 lastName: payload['family_name'],
