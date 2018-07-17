@@ -119,6 +119,7 @@ const UserSchema = new mongoose.Schema({
     },
     authData: {
         type: UserAuthDataSchema,
+        required: true,
     },
     cartId: {
         type: mongoose.Schema.Types.ObjectId
