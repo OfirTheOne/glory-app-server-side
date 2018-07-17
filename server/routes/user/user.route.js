@@ -24,10 +24,11 @@ const logger = new Logger(LogStream.CONSOLE);
 /********* routes *********/
 
 
+
+usersRoute.post('/f', async (req, res) => {
 /** POST: /users/f 
  * Route for signup / signin user with facebook
  * */
-usersRoute.post('/f', async (req, res) => {
     logger.info(`POST: /users/f`, `Enter`);
 
     const idToken = req.body['idToken'];
@@ -96,9 +97,13 @@ usersRoute.post('/f', async (req, res) => {
         console.log(`step 3 - SIGN-UP`);
 
         // if the user dont exists in the db 
-        user = new User({ authData: { email, provider } });
+        user = new User();
         
         try {
+            user.authData.email = email;
+            user.authData.provider = provider;
+            await user.save();
+
             await user.setPersonalData({
                 email,
                 lastName: authTokenRes['last_name'],
@@ -130,6 +135,8 @@ usersRoute.post('/f', async (req, res) => {
     }
 });
 
+
+usersRoute.post('/g', async (req, res) => {
 /** POST: /users/g 
  * Route for signup / signin user with google
  * expecting in the body : 
@@ -140,8 +147,7 @@ usersRoute.post('/f', async (req, res) => {
  * doc : 
  *  https://developers.google.com/identity/sign-in/web/backend-auth
  *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
- * */
-usersRoute.post('/g', async (req, res) => {
+ * */    
     logger.info(`POST: /users/g`, `Enter`);
     const idToken = req.body['idToken'];
     const provider = 'google';
@@ -206,8 +212,14 @@ usersRoute.post('/g', async (req, res) => {
     }
     else { // SIGN-UP
         // if the user dont exists in the db 
-        user = new User({ authData: { email, provider } });
+        user = new User();
+        console.log('************************************************');
+        console.log(user);
+
         try {
+            user.authData.email = email;
+            user.authData.provider = provider;
+            await user.save();
             await user.setPersonalData({
                 email,
                 lastName: payload['family_name'],
@@ -237,6 +249,8 @@ usersRoute.post('/g', async (req, res) => {
     }
 });
 
+
+usersRoute.post('/c', async (req, res) => {
 /** POST: /users/c 
  * Route for signup / signin user with my custom system
  * expecting in the body : 
@@ -248,7 +262,6 @@ usersRoute.post('/g', async (req, res) => {
  *       }
  *  }
  * */
-usersRoute.post('/c', async (req, res) => {
     logger.info(`POST: /users/c`, `Enter`);
 
     // **** 1 **** - validateion of the req body
@@ -347,10 +360,11 @@ usersRoute.post('/c', async (req, res) => {
 
 });
 
+
+usersRoute.post('/data', authenticate, async (req, res) => {
 /** POST: /users/data 
  * Route for submiting user data
  * */
-usersRoute.post('/data', authenticate, async (req, res) => {
     logger.info(`POST: /users/data`, `Enter`);
 
     const data = _.pick(req.body.data, ['lastName', 'firstName', 'birthDate', 'gender']);
@@ -395,10 +409,11 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 
 });
 
+
+usersRoute.get('/me', authenticate, (req, res) => {
 /** GET: /users/me 
  * Route for getting user by a token / the user object of the logged user
  * */
-usersRoute.get('/me', authenticate, (req, res) => {
     logger.info(`GET: /users/me`, `Enter`);
 
     logger.info(`GET: /users/me`, `Exit`);
@@ -411,11 +426,12 @@ usersRoute.get('/me', authenticate, (req, res) => {
     });
 });
 
+
+usersRoute.post('/me/token', authenticate, async (req, res) => {
 /** POST: /users/me/token 
  * Route for renew token with a new one (case of transparent sigin) / removing the 
  * x-auth token (that in the header) from the token array and edding the newToken that in the body.
  * */
-usersRoute.post('/me/token', authenticate, async (req, res) => {
     logger.info(`POST: /me/token`, `Enter`);
 
     var user = req.user;
@@ -498,10 +514,10 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
 })
 
 
+usersRoute.delete('/me/token', authenticate, async (req, res) => {
 /** DELETE: /users/me/token 
  * Route for deleting token / signout user
  * */
-usersRoute.delete('/me/token', authenticate, async (req, res) => {
     logger.info(`DELETE: /me/token`, `Enter`);
 
     var user = req.user;
