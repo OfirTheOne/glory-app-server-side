@@ -354,7 +354,7 @@ UserSchema.statics.findUserByEmail = async function (email) {
     const User = this;
 
     try {
-        const user = await User.findOne({ authData: { email } });
+        const user = await User.findOne({ 'authData.email': email });
         if (!user) {
             throw new Error(`failed to find a user with the email : ${email}.`);
         }
