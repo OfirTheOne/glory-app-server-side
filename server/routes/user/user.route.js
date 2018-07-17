@@ -215,7 +215,7 @@ usersRoute.post('/g', async (req, res) => {
         console.log('SIGN-UP');
         user = new User({authData: {email, provider}});
         console.log('************************************************');
-        console.log(user);
+        console.log(JSON.stringify(user, undefined, 2));
 
         try {
             // user.authData.email = email;
