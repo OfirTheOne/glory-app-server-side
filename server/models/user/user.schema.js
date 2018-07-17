@@ -120,7 +120,6 @@ const UserSchema = new mongoose.Schema({
     authData: {
         type: UserAuthDataSchema,
     },
-
     cartId: {
         type: mongoose.Schema.Types.ObjectId
     },
@@ -128,7 +127,7 @@ const UserSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId]
     },
 
-    
+
 });
 
 const USER_PROVIDERS = ['custom', 'google', 'facebook'];

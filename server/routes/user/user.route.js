@@ -212,6 +212,7 @@ usersRoute.post('/g', async (req, res) => {
     }
     else { // SIGN-UP
         // if the user dont exists in the db 
+        console.log('SIGN-UP');
         user = new User();
         console.log('************************************************');
         console.log(user);
