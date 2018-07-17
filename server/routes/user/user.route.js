@@ -225,7 +225,6 @@ usersRoute.post('/g', async (req, res) => {
             await user.setPersonalData({
                 lastName: payload['family_name'],
                 fisrtName: payload['given_name']
-
             });
             console.log('HERE 0000002')
             await user.save();
