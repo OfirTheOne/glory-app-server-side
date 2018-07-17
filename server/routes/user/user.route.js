@@ -213,14 +213,14 @@ usersRoute.post('/g', async (req, res) => {
     else { // SIGN-UP
         // if the user dont exists in the db 
         console.log('SIGN-UP');
-        user = new User();
+        user = new User({authData: {email, provider}});
         console.log('************************************************');
         console.log(user);
 
         try {
-            user.authData.email = email;
-            user.authData.provider = provider;
-            await user.save();
+            // user.authData.email = email;
+            // user.authData.provider = provider;
+            // await user.save();
             await user.setPersonalData({
                 email,
                 lastName: payload['family_name'],
