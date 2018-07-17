@@ -173,6 +173,21 @@ UserSchema.methods.matchPassword = async function (password) {
 }
 
 
+UserSchema.statics.createNewUser = function(email, provider, password) {
+    const User = this;
+    const user = new User({
+        authData: {
+            email, 
+            provider,
+            tokens: [],
+            // in cases of google / facebook signing 'password' == undefined
+            password 
+        }
+    });
+    
+    return user;
+}  
+
 UserSchema.statics.findByCredentials = async function (email, password) {
     const User = this;
     const user = await User.findUserByEmail(email);
@@ -281,7 +296,7 @@ UserSchema.statics.verifyToken = async function (provider, token) {
     return verificationResult;
 };
 
-// ---
+
 UserSchema.statics.verifyCustomToken = async function (token) {
     var decoded;
     try {
@@ -331,7 +346,7 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
     console.log(res);
 
 };
-// ---
+
 // ---------
 UserSchema.statics.findUserByEmail = async function (email) {
     console.log(email);
