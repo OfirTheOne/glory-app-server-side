@@ -213,7 +213,7 @@ usersRoute.post('/g', async (req, res) => {
     else { // SIGN-UP
         // if the user dont exists in the db 
         console.log('SIGN-UP');
-        user = User.createNewUser(email, provider);//new User({authData: {email, provider}});
+        user = new User({authData: {email, provider}}); // User.createNewUser(email, provider);
         console.log('************************************************');
         console.log(JSON.stringify(user, undefined, 2));
 
