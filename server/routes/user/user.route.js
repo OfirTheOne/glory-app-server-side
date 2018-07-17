@@ -70,7 +70,7 @@ usersRoute.post('/f', async (req, res) => {
         // SIGN-IN
 
         // if the user exists in the db 
-        if (user.provider != provider) {
+        if (user.authData.provider != provider) {
             // if the email exists but with other provider than facebook,
             // the user allready sign up with the same email but using google or custom
             logger.warn(`POST: /users/f`, `user email provider dont match the db provider.`);
@@ -96,7 +96,8 @@ usersRoute.post('/f', async (req, res) => {
         console.log(`step 3 - SIGN-UP`);
 
         // if the user dont exists in the db 
-        user = new User({ email, provider })
+        user = new User({ authData: { email, provider } });
+        
         try {
             await user.setPersonalData({
                 email,
@@ -133,7 +134,7 @@ usersRoute.post('/f', async (req, res) => {
  * Route for signup / signin user with google
  * expecting in the body : 
  *  {
- *      idToken
+ *      idk0Token
  *  }
  * 
  * doc : 
@@ -184,7 +185,7 @@ usersRoute.post('/g', async (req, res) => {
     if (user) {  
         // SIGN-IN
         // if the user exists in the db 
-        if (user.provider != provider) {
+        if (user.authData.provider != provider) {
             // if the email exists but with other provider than google,
             // the user allready sign up with the same email but using facebook or custom
             return res.status(400).send('user email dont match the provider');
@@ -205,7 +206,7 @@ usersRoute.post('/g', async (req, res) => {
     }
     else { // SIGN-UP
         // if the user dont exists in the db 
-        user = new User({ email, provider })
+        user = new User({ authData: { email, provider } });
         try {
             await user.setPersonalData({
                 email,
@@ -272,7 +273,7 @@ usersRoute.post('/c', async (req, res) => {
 
     if (user) {  //   -   SIGN-IN   -
         // if the user exists in the db 
-        if (user.provider != provider) {
+        if (user.authData.provider != provider) {
             // if the email exists but with other provider than google,
             // the user allready sign up with the same email but using facebook or custom
             return res.status(400).send('user email dont match the provider');
@@ -305,9 +306,11 @@ usersRoute.post('/c', async (req, res) => {
         // if the user dont exists in the db 
 
         user = new User({
-            email,
-            provider,
-            password: req.body.password
+            authData: { 
+                email,
+                provider,
+                password: req.body.password
+            }
         });
         try {
             // saving the new user
@@ -540,7 +543,7 @@ const validateCustomSignRequest = (reqBody) => {
  * @returns true if all the existed fileds are valide.
  */
 const validateUserData = (data) => {
-    if (data.lastName != undefined && data.lastName != null) {
+    if (data.lastName !== undefined && data.lastName != null) {
         if (!validator.isAlpha(data.lastName)) {
             return false;
         }

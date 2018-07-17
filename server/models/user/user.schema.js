@@ -37,6 +37,112 @@ const UserPersonalDataSchema = new mongoose.Schema({
     },
 });
 
+const UserAddressSchema = new mongoose.Schema({
+    country: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        required: true,
+    },
+    address: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        required: true,
+    },
+    city: {
+        type: String,
+        trim: true,
+        minlength: 1,
+        required: true,
+    },
+    postcode: {
+        type: number,
+        required: true,
+    },
+});
+
+const UserAuthDataSchema = new mongoose.Schema({
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 1,
+        unique: true,
+        validate: {
+            validator: validator.isEmail,
+            message: `{VALUE} is not a vaild email.`
+        }
+    },
+    password: {
+        type: String,
+        minlength: 6,
+    },
+    provider: {
+        type: String,
+        required: true,
+        validate: (value) => USER_PROVIDERS.includes(value)
+    },
+    roll: {
+        type: Number,
+        default: 1,
+        validate: (value) => [1, 2].includes(value)
+    },
+    tokens: [{
+        access: {
+            type: String,
+            // required: true,
+        },
+        expDate: {
+            type: Number,
+            // required: true,
+        },
+        token: {
+            type: String,
+            // required: true,
+        },
+        deviceIp: {
+            type: String,
+            // required: true,
+            validate: validator.isIP
+        }
+    }]
+});
+
+
+const UserSchema = new mongoose.Schema({
+    personalData: {
+        type: UserPersonalDataSchema,
+    },
+    address: {
+        type: UserAddressSchema,
+    },
+    authData: {
+        type: UserAuthDataSchema,
+    },
+    
+    cartId: {
+        type: mongoose.Schema.Types.ObjectId
+    },
+    wishList: {
+        type: [mongoose.Schema.Types.ObjectId]
+    },
+
+    
+});
+
+const USER_PROVIDERS = ['custom', 'google', 'facebook'];
+
+module.exports = {
+    UserPersonalDataSchema,
+    UserAuthDataSchema,
+    UserSchema,
+    USER_PROVIDERS
+};
+
+
+/* 
+
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
@@ -93,10 +199,4 @@ const UserSchema = new mongoose.Schema({
     }]
 });
 
-const USER_PROVIDERS = ['custom', 'google', 'facebook'];
-
-module.exports = {
-    UserPersonalDataSchema,
-    UserSchema,
-    USER_PROVIDERS
-};
+*/

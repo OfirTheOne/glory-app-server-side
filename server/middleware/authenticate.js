@@ -43,7 +43,7 @@ const authenticateAdmin = async (req, res, next) => {
     try {
         const user = await User.findByTokenVerification(req, token, provider);
 
-        if (!user || user.roll !== 2) {
+        if (!user || user.authData.roll !== 2) {
             throw new Error('cant find user or the user is not an admin');
         }
         req.user = user;

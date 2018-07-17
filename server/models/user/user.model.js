@@ -25,7 +25,14 @@ UserSchema.methods.toJSON = function () {
     const user = this;
     const userObject = user.toObject();
 
-    return _.pick(userObject, ['_id', 'email', 'provider', 'personalData', 'wishList']);
+    return _.pick(userObject, [
+        '_id', 
+        'authData.email', 
+        'authData.provider', 
+        'personalData', 
+        'address',  
+        'wishList'
+    ]);
 }
 
 /** @description .
@@ -43,8 +50,8 @@ UserSchema.methods.generateAuthToken = async function (req) {
 
     const deviceIp = req.connection.remoteAddress || req.ip;
     // remove all expired / invalid tokens
-    user.tokens = removeExpTokens(user.tokens);
-    if (!canGenerateToIP(user.tokens, deviceIp)) {
+    user.authData.tokens = removeExpTokens(user.authData.tokens);
+    if (!canGenerateToIP(user.authData.tokens, deviceIp)) {
         throw new Error('Exceeded tokens amount for this ip');
     }
     const token = jwt.sign(
@@ -104,7 +111,11 @@ UserSchema.methods.removeToken = async function (token) {
     try {
         const removeRes = await user.update({
             $pull: {
-                tokens: { token }
+                authData: {
+                    tokens: { 
+                        token 
+                    }
+                } 
             }
         });
         console.log(`removeToken : removeRes ${removeRes}`)        
@@ -117,13 +128,15 @@ UserSchema.methods.removeToken = async function (token) {
 UserSchema.methods.addToken = async function (token) {
     const user = this;
     try {
-        const isTokenExistsInArray = user.tokens.some((element) => element.token == token);
+        const isTokenExistsInArray = user.authData.tokens.some((element) => element.token == token);
         if (!isTokenExistsInArray) {
             return await user.update({
                 $push: {
-                    tokens: {
-                        token,
-                        'access': 'auth'
+                    authData: {
+                        tokens: {
+                            token,
+                            'access': 'auth'
+                        }
                     }
                 }
             });
@@ -153,7 +166,7 @@ UserSchema.methods.matchPassword = async function (password) {
     const user = this;
     // const personalData = new UserPersonalDataSchema(data);
     try {
-        return await bcrypt.compare(password, user.password);
+        return await bcrypt.compare(password, user.authData.password);
     } catch (e) {
         throw e;
     }
@@ -185,9 +198,9 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 console.log('case : custom');
                 queryObj = {
                     _id: verificationResult._id,
-                    provider,
-                    'tokens.token': token,
-                    'tokens.access': 'auth'
+                    'authData.provider': provider,
+                    'authData.tokens.token': token,
+                    'authData.tokens.access': 'auth'
                 };
                 break;
             }
@@ -197,8 +210,8 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 const payload = verificationResult.getPayload();
                 req.authValue = payload['sub'];
                 queryObj = {
-                    email: payload.email,
-                    provider
+                    'authData.email': payload.email,
+                    'authData.provider': provider
                 };
                 break;
             }
@@ -208,8 +221,8 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 const verificationResult = await User.verifyFacebookToken(token);
                 req.authValue = verificationResult.id;
                 queryObj = {
-                    email: verificationResult.email,
-                    provider
+                    'authData.email': verificationResult.email,
+                    'authData.provider': provider
                 };
                 break;
             }
@@ -325,7 +338,7 @@ UserSchema.statics.findUserByEmail = async function (email) {
     const User = this;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ 'authData.email': email });
         if (!user) {
             throw new Error(`failed to find a user with the email : ${email}.`);
         }
@@ -339,7 +352,10 @@ UserSchema.statics.findUserByEmail = async function (email) {
 
 }
 
-
+/**
+ * exec before every save calling and make sure that the passward that beeing saved on the db 
+ * are hashed .
+ */
 UserSchema.pre('save', async function (next) {
     const user = this;
 
@@ -349,8 +365,8 @@ UserSchema.pre('save', async function (next) {
     if (user.isModified('password')) {
         try {
             const salt = await bcrypt.genSalt(10);
-            const hash = await bcrypt.hash(user.password, salt);
-            user.password = hash;
+            const hash = await bcrypt.hash(user.authData.password, salt);
+            user.authData.password = hash;
             next();
         } catch (e) {
             next(e);
