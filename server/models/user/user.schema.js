@@ -57,7 +57,7 @@ const UserAddressSchema = new mongoose.Schema({
         required: true,
     },
     postcode: {
-        type: number,
+        type: Number,
         required: true,
     },
 });
@@ -120,7 +120,7 @@ const UserSchema = new mongoose.Schema({
     authData: {
         type: UserAuthDataSchema,
     },
-    
+
     cartId: {
         type: mongoose.Schema.Types.ObjectId
     },
