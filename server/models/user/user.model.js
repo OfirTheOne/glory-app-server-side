@@ -25,14 +25,10 @@ UserSchema.methods.toJSON = function () {
     const user = this;
     const userObject = user.toObject();
 
-    return _.pick(userObject, [
-        '_id',
-        'authData.email',
-        'authData.provider',
-        'personalData',
-        'address',
-        'wishList'
-    ]);
+    const authData = _.pick(userObject.authData, ['email', 'provider'])
+    const returnedUserObject = _.pick(userObject, ['_id', 'personalData', 'address', 'wishList']);
+    returnedUserObject.authData = authData;
+    return returnedUserObject;
 }
 
 /** @description .
