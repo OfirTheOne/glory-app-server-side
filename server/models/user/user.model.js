@@ -210,9 +210,11 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 console.log('case : custom');
                 queryObj = {
                     _id: verificationResult._id,
-                    'authData.provider': provider,
-                    'authData.tokens.token': token,
-                    'authData.tokens.access': 'auth'
+                    authData: {
+                        provider,
+                        'tokens.token': token,
+                        'tokens.access': 'auth'
+                    } 
                 };
                 break;
             }
@@ -222,8 +224,10 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 const payload = verificationResult.getPayload();
                 req.authValue = payload['sub'];
                 queryObj = {
-                    'authData.email': payload.email,
-                    'authData.provider': provider
+                    authData: {
+                        email : payload.email,
+                        provider
+                    }
                 };
                 break;
             }
@@ -233,8 +237,10 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 const verificationResult = await User.verifyFacebookToken(token);
                 req.authValue = verificationResult.id;
                 queryObj = {
-                    'authData.email': verificationResult.email,
-                    'authData.provider': provider
+                    authData : {
+                        email: verificationResult.email,
+                        provider
+                    }
                 };
                 break;
             }
