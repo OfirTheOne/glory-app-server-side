@@ -221,21 +221,25 @@ usersRoute.post('/g', async (req, res) => {
             // user.authData.email = email;
             // user.authData.provider = provider;
             // await user.save();
+            console.log('HERE 0000001')
             await user.setPersonalData({
                 lastName: payload['family_name'],
                 fisrtName: payload['given_name']
 
             });
-
+            console.log('HERE 0000002')
             await user.save();
             const ownerId = user._id;
+            console.log('HERE 0000003')
             const cart = new Cart({ ownerId })
             await cart.save();
+            console.log('HERE 0000004')
             await user.addToken(idToken);
 
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
+            console.log('HERE 0000005')
             return res.status(200).send({
                 data: {
                     signup: true,
