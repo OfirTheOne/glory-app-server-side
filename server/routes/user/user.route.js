@@ -222,7 +222,6 @@ usersRoute.post('/g', async (req, res) => {
             // user.authData.provider = provider;
             // await user.save();
             await user.setPersonalData({
-                email,
                 lastName: payload['family_name'],
                 fisrtName: payload['given_name']
 
