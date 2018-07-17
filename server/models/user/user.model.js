@@ -378,7 +378,7 @@ UserSchema.pre('save', async function (next) {
     // if the 'save' method have not been called from POST: /user request, minning 
     // that the request is not for signing a new user, there for the user is allready signin
     // and the password is already encrypeted (= modified).
-    if (user.isModified('authData.password')) {
+    if (user.authData && user.authData.password && user.isModified('authData.password')) {
         try {
             const salt = await bcrypt.genSalt(10);
             const hash = await bcrypt.hash(user.authData.password, salt);
