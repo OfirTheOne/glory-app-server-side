@@ -8,7 +8,7 @@ const { FB, FacebookApiException } = require('fb');
 
 const _ = require('lodash');
 
-let { UserSchema, UserPersonalDataSchema, USER_PROVIDERS } = require('./user.schema');
+let { UserSchema, UserPersonalDataSchema, UserAuthDataSchema, USER_PROVIDERS } = require('./user.schema');
 
 // validate custom jwt related config variable 
 const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
@@ -26,11 +26,11 @@ UserSchema.methods.toJSON = function () {
     const userObject = user.toObject();
 
     return _.pick(userObject, [
-        '_id', 
-        'authData.email', 
-        'authData.provider', 
-        'personalData', 
-        'address',  
+        '_id',
+        'authData.email',
+        'authData.provider',
+        'personalData',
+        'address',
         'wishList'
     ]);
 }
@@ -112,13 +112,13 @@ UserSchema.methods.removeToken = async function (token) {
         const removeRes = await user.update({
             $pull: {
                 authData: {
-                    tokens: { 
-                        token 
+                    tokens: {
+                        token
                     }
-                } 
+                }
             }
         });
-        console.log(`removeToken : removeRes ${removeRes}`)        
+        console.log(`removeToken : removeRes ${removeRes}`)
         return removeRes
     } catch (e) {
         throw e;
@@ -152,11 +152,11 @@ UserSchema.methods.setPersonalData = async function (data) {
     try {
         // await user.update();
         return await User.findByIdAndUpdate(
-            user._id, 
-            { $set: { personalData:  data } },
+            user._id,
+            { $set: { personalData: data } },
             { new: true }
         );
-         
+
     } catch (e) {
         throw e;
     }
@@ -173,20 +173,21 @@ UserSchema.methods.matchPassword = async function (password) {
 }
 
 
-UserSchema.statics.createNewUser = function(email, provider, password) {
-    const User = this;
-    const user = new User({
-        authData: {
-            email, 
-            provider,
-            tokens: [],
-            // in cases of google / facebook signing 'password' == undefined
-            password 
-        }
-    });
-    
+UserSchema.statics.createNewUser = function (email, provider, password) {
+    // const User = this;
+
+    const authData = {
+        email,
+        provider,
+        tokens: [],
+        // in cases of google / facebook signing 'password' == undefined
+        password
+    };
+
+    const user = new User({ authData });
+
     return user;
-}  
+}
 
 UserSchema.statics.findByCredentials = async function (email, password) {
     const User = this;
@@ -245,7 +246,7 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
             default: break;
         }
 
-        if(queryObj) {
+        if (queryObj) {
             return await User.findOne(queryObj);
         }
 
@@ -327,19 +328,19 @@ UserSchema.statics.verifyGoogleToken = async function (token) {
 };
 
 UserSchema.statics.verifyFacebookToken = async function (token) {
-    
+
     FB.options({ version: 'v2.4' });
-    var fbRes = FB.extend({ 
-        appId: process.env.FACEBOOK_APP_ID, 
-        appSecret: process.env.FACEBOOK_APP_SECRET 
+    var fbRes = FB.extend({
+        appId: process.env.FACEBOOK_APP_ID,
+        appSecret: process.env.FACEBOOK_APP_SECRET
     });
     try {
         // doc - https://developers.facebook.com/docs/facebook-login/permissions/v3.0
-        const res =  await FB.api('me', { fields: 'id,email,name,last_name', access_token: token });
+        const res = await FB.api('me', { fields: 'id,email,name,last_name', access_token: token });
         console.log(res);
         return res;
 
-    } catch(e) {
+    } catch (e) {
         console.log(e);
         throw e;
     }
@@ -353,13 +354,13 @@ UserSchema.statics.findUserByEmail = async function (email) {
     const User = this;
 
     try {
-        const user = await User.findOne({authData: {  email }});
+        const user = await User.findOne({ authData: { email } });
         if (!user) {
             throw new Error(`failed to find a user with the email : ${email}.`);
         }
         return user;
 
-    } catch(e) {
+    } catch (e) {
         console.log(`from UserSchema.statics.findUserByEmail(${email}) : `, e)
         throw e;
     }
