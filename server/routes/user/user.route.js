@@ -213,7 +213,7 @@ usersRoute.post('/g', async (req, res) => {
     else { // SIGN-UP
         // if the user dont exists in the db 
         console.log('SIGN-UP');
-        user = new User({
+        user = await (new User({
                 authData: {
                     email, 
                     provider
@@ -222,15 +222,17 @@ usersRoute.post('/g', async (req, res) => {
                     lastName: payload['family_name'],
                     firstName: payload['given_name']
                 }
-            }); // User.createNewUser(email, provider);
-        console.log('************************************************');
+            })
+        ).save(); // User.createNewUser(email, provider);
+
+        console.log('************************************************ \n\n\n\n');
         console.log(JSON.stringify(user, undefined, 2));
 
         try {
             // user.authData.email = email;
             // user.authData.provider = provider;
             console.log('HERE 0000001')
-            await user.save();
+            // await user.save();
             console.log('HERE 0000002')
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
