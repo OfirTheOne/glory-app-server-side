@@ -226,10 +226,8 @@ UserSchema.statics.findByTokenVerification = async function (req, token, provide
                 const payload = verificationResult.getPayload();
                 req.authValue = payload['sub'];
                 queryObj = {
-                    authData: {
-                        email : payload.email,
-                        provider
-                    }
+                    'authData.email': payload.email,    
+                    'authData.provider' : provider
                 };
                 break;
             }
