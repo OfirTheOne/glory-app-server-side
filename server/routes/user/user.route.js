@@ -213,29 +213,32 @@ usersRoute.post('/g', async (req, res) => {
     else { // SIGN-UP
         // if the user dont exists in the db 
         console.log('SIGN-UP');
-        user = new User({authData: {email, provider}}); // User.createNewUser(email, provider);
+        user = new User({
+                authData: {
+                    email, 
+                    provider
+                }, 
+                personalData: {
+                    lastName: payload['family_name'],
+                    firstName: payload['given_name']
+                }
+            }); // User.createNewUser(email, provider);
         console.log('************************************************');
         console.log(JSON.stringify(user, undefined, 2));
 
         try {
             // user.authData.email = email;
             // user.authData.provider = provider;
-            await user.save();
             console.log('HERE 0000001')
-            await user.setPersonalData({
-                lastName: payload['family_name'],
-                fisrtName: payload['given_name']
-            });
-            console.log('HERE 0000002')
             await user.save();
-            console.log('HERE 0000003')
+            console.log('HERE 0000002')
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
-            console.log('HERE 0000004')
+            console.log('HERE 0000003')
             await cart.save();
-            console.log('HERE 0000005')
+            console.log('HERE 0000004')
             await user.addToken(idToken);
-            console.log('HERE 0000006')
+            console.log('HERE 0000005')
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
