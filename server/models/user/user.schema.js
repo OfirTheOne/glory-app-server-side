@@ -62,52 +62,9 @@ const UserAddressSchema = new mongoose.Schema({
     },
 });
 
-const UserAuthDataSchema = new mongoose.Schema({
-    email: {
-        type: String,
-        required: true,
-        trim: true,
-        minlength: 1,
-        unique: true,
-        validate: {
-            validator: validator.isEmail,
-            message: `{VALUE} is not a vaild email.`
-        }
-    },
-    password: {
-        type: String,
-        minlength: 6,
-    },
-    provider: {
-        type: String,
-        required: true,
-        validate: (value) => USER_PROVIDERS.includes(value)
-    },
-    roll: {
-        type: Number,
-        default: 1,
-        validate: (value) => [1, 2].includes(value)
-    },
-    tokens: [{
-        access: {
-            type: String,
-            // required: true,
-        },
-        expDate: {
-            type: Number,
-            // required: true,
-        },
-        token: {
-            type: String,
-            // required: true,
-        },
-        deviceIp: {
-            type: String,
-            // required: true,
-            validate: validator.isIP
-        }
-    }]
-});
+// const UserAuthDataSchema = new mongoose.Schema({
+    
+// });
 
 
 const UserSchema = new mongoose.Schema({
@@ -118,8 +75,50 @@ const UserSchema = new mongoose.Schema({
         type: UserAddressSchema,
     },
     authData: {
-        type: UserAuthDataSchema,
-        required: true,
+        email: {
+            type: String,
+            required: true,
+            trim: true,
+            minlength: 1,
+            unique: true,
+            validate: {
+                validator: validator.isEmail,
+                message: `{VALUE} is not a vaild email.`
+            }
+        },
+        password: {
+            type: String,
+            minlength: 6,
+        },
+        provider: {
+            type: String,
+            required: true,
+            validate: (value) => USER_PROVIDERS.includes(value)
+        },
+        roll: {
+            type: Number,
+            default: 1,
+            validate: (value) => [1, 2].includes(value)
+        },
+        tokens: [{
+            access: {
+                type: String,
+                // required: true,
+            },
+            expDate: {
+                type: Number,
+                // required: true,
+            },
+            token: {
+                type: String,
+                // required: true,
+            },
+            deviceIp: {
+                type: String,
+                // required: true,
+                validate: validator.isIP
+            }
+        }],
     },
     cartId: {
         type: mongoose.Schema.Types.ObjectId
@@ -135,7 +134,7 @@ const USER_PROVIDERS = ['custom', 'google', 'facebook'];
 
 module.exports = {
     UserPersonalDataSchema,
-    UserAuthDataSchema,
+    // UserAuthDataSchema,
     UserSchema,
     USER_PROVIDERS
 };

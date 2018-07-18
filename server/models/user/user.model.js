@@ -8,7 +8,7 @@ const { FB, FacebookApiException } = require('fb');
 
 const _ = require('lodash');
 
-let { UserSchema, UserPersonalDataSchema, UserAuthDataSchema, USER_PROVIDERS } = require('./user.schema');
+let { UserSchema, UserPersonalDataSchema, USER_PROVIDERS } = require('./user.schema');
 
 // validate custom jwt related config variable 
 const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
