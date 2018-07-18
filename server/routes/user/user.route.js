@@ -240,7 +240,11 @@ usersRoute.post('/g', async (req, res) => {
             await cart.save();
             console.log('HERE 0000004')
             await user.addToken(idToken);
+
             console.log('HERE 0000005')
+        console.log(JSON.stringify(user, undefined, 2));
+        console.log('HERE 0000006')
+
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
