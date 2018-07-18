@@ -147,11 +147,13 @@ UserSchema.methods.setPersonalData = async function (data) {
     // const personalData = new UserPersonalDataSchema(data);
     try {
         // await user.update();
-        return await User.findByIdAndUpdate(
+        const userDoc = await User.findByIdAndUpdate(
             user._id,
             { $set: { personalData: data } },
             { new: true }
         );
+        console.log(`setPersonalData(data) : return value -  ${JSON.stringify(userDoc, undefined, 2)}`)
+        return userDoc;
 
     } catch (e) {
         throw e;
