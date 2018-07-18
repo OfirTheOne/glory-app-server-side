@@ -23,8 +23,6 @@ const logger = new Logger(LogStream.CONSOLE);
 
 /********* routes *********/
 
-
-
 usersRoute.post('/f', async (req, res) => {
 /** POST: /users/f 
  * Route for signup / signin user with facebook
@@ -36,22 +34,20 @@ usersRoute.post('/f', async (req, res) => {
 
     // ****** Position 1 ****** // - Verifing idToken
     // ******************************************************************* //
-    let authTokenRes;
+    let authTokenResult;
     try {
-        authTokenRes = await User.verifyFacebookToken(idToken);
-
+        authTokenResult = await User.verifyFacebookToken(idToken);
     } catch (e) {
         logger.error(`POST: /users/f`, `verifyFacebookToken failed.`, {params: {error: e}});
         return res.status(400).send(e);
     }
-
 
     // ****** Position 2 ****** // - Find user obj 
     // ******************************************************************* //
     /**
      *  { "email": "" , "id": "", "name": "", "last_name": "" }
      */
-    const email = authTokenRes['email'];
+    const email = authTokenResult['email'];
     let user;
     try {
         user = await User.findUserByEmail(email);
@@ -64,13 +60,11 @@ usersRoute.post('/f', async (req, res) => {
         console.log(e);
     }
 
-
     // ****** Position 3 ****** // - Handeling two cases : SIGNIN & SIGNUP
     // ******************************************************************* //
     if (user) {  
-        // SIGN-IN
-
         // if the user exists in the db 
+        console.log(`start step 3 - SIGN-IN`);
         if (user.authData.provider != provider) {
             // if the email exists but with other provider than facebook,
             // the user allready sign up with the same email but using google or custom
@@ -84,7 +78,7 @@ usersRoute.post('/f', async (req, res) => {
             return res.status(200).send({
                 data: {
                     signin: true,
-                    authValue: authTokenRes['id'],
+                    authValue: authTokenResult['id'],
                     user
                 }
             });
@@ -93,29 +87,21 @@ usersRoute.post('/f', async (req, res) => {
         }
     }
     else { 
-        // SIGN-UP
-        console.log(`step 3 - SIGN-UP`);
-
         // if the user dont exists in the db 
-        user = new User();
-        
+        console.log(`start step 3 - SIGN-UP`);
         try {
-            user.authData.email = email;
-            user.authData.provider = provider;
-            await user.save();
-
-            await user.setPersonalData({
-                email,
-                lastName: authTokenRes['last_name'],
-                fisrtName: authTokenRes['name']
-
-            })
-
-            await user.save();
+            user = await (new User({
+                authData: { email, provider }, 
+                personalData: {
+                    lastName: authTokenResult['last_name'],
+                    firstName: authTokenResult['name']
+                }
+            })).save();
+            console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
             await cart.save();
-            await user.addToken(idToken);
+            // await user.addToken(idToken);
 
             console.log(`finished step 3 - SIGN-UP`);
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
@@ -125,7 +111,7 @@ usersRoute.post('/f', async (req, res) => {
             return res.status(200).send({
                 data: {
                     signup: true,
-                    authValue: authTokenRes['id'],
+                    authValue: authTokenResult['id'],
                     user
                 }
             });
@@ -139,10 +125,6 @@ usersRoute.post('/f', async (req, res) => {
 usersRoute.post('/g', async (req, res) => {
 /** POST: /users/g 
  * Route for signup / signin user with google
- * expecting in the body : 
- *  {
- *      idk0Token
- *  }
  * 
  * doc : 
  *  https://developers.google.com/identity/sign-in/web/backend-auth
@@ -154,15 +136,13 @@ usersRoute.post('/g', async (req, res) => {
 
     // ****** Position 1 ****** // - Verifing idToken
     // ******************************************************************* //
-    let ticket;
-    try {
-        ticket = await User.verifyGoogleToken(idToken);
+    let authTokenResult;
+    try { //
+        authTokenResult = await User.verifyGoogleToken(idToken);
     } catch (e) {
         logger.error(`POST: /users/f`, `verifyGoogleToken failed.`, {params: {error: e}});
         return res.status(400).send(new Error('token validetion failed.'));
     }
-
-
 
     // ****** Position 2 ****** // - find user obj
     // ******************************************************************* //
@@ -173,7 +153,7 @@ usersRoute.post('/g', async (req, res) => {
         *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
         * */
 
-    const payload = ticket.getPayload();
+    const payload = authTokenResult.getPayload();
     const email = payload['email'];
     let user;
 
@@ -184,13 +164,11 @@ usersRoute.post('/g', async (req, res) => {
         console.log(e);
     }
 
-
-
     // ****** Position 3 ****** // - handeling two cases : SIGNIN & SIGNUP
     // ******************************************************************* //
     if (user) {  
-        // SIGN-IN
         // if the user exists in the db 
+        console.log(`start step 3 - SIGN-IN`);
         if (user.authData.provider != provider) {
             // if the email exists but with other provider than google,
             // the user allready sign up with the same email but using facebook or custom
@@ -210,40 +188,24 @@ usersRoute.post('/g', async (req, res) => {
             console.log(e);
         }
     }
-    else { // SIGN-UP
+    else { 
+        
         // if the user dont exists in the db 
-        console.log('SIGN-UP');
-        user = await (new User({
-                authData: {
-                    email, 
-                    provider
-                }, 
+        console.log(`start step 3 - SIGN-UP`);        
+        try {
+            user = await (new User({
+                authData: {  email, provider }, 
                 personalData: {
                     lastName: payload['family_name'],
                     firstName: payload['given_name']
                 }
-            })
-        ).save(); // User.createNewUser(email, provider);
-
-        console.log('************************************************ \n\n\n\n');
-        console.log(JSON.stringify(user, undefined, 2));
-
-        try {
-            // user.authData.email = email;
-            // user.authData.provider = provider;
-            console.log('HERE 0000001')
-            // await user.save();
-            console.log('HERE 0000002')
+            })).save(); 
+            console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
-            console.log('HERE 0000003')
             await cart.save();
-            console.log('HERE 0000004')
-            // await user.addToken(idToken);
 
-            console.log('HERE 0000005')
-        console.log(JSON.stringify(user, undefined, 2));
-        console.log('HERE 0000006')
+            // await user.addToken(idToken);
 
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
@@ -281,7 +243,6 @@ usersRoute.post('/c', async (req, res) => {
         return res.status(400).send('request body missing parameters.');
     }
 
-
     // **** 2 **** - find the user by email - chack what is the case ? sign in or sign up
     const email = req.body.email;
     const provider = 'custom';
@@ -293,9 +254,7 @@ usersRoute.post('/c', async (req, res) => {
         console.log(e);
     }
 
-
     // **** 3 **** - handeling two cases : SIGNIN & SIGNUP
-
     if (user) {  //   -   SIGN-IN   -
         // if the user exists in the db 
         if (user.authData.provider != provider) {
@@ -329,17 +288,15 @@ usersRoute.post('/c', async (req, res) => {
     }
     else {  //   -   SIGN-UP   -
         // if the user dont exists in the db 
-
-        user = new User({
-            authData: { 
-                email,
-                provider,
-                password: req.body.password
-            }
-        });
         try {
             // saving the new user
-            await user.save();
+            user = await new User({
+                    authData: { 
+                        email,
+                        provider,
+                        password: req.body.password
+                    }
+            }).save();
 
             // updating his personal data
             let dataDefined = false;
@@ -399,19 +356,6 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             });
             return res.status(400).send(e);
         }
-        /*
-        try {
-            await user.save();
-
-        } catch(e) {
-            logger.error(`POST: /users/data`, `error at user.save method.`, {
-                params: { user, error:  e }
-            });
-            return res.status(400).send(e);
-        }
-        */
-        
-
     } else {
         logger.warn(`POST: /users/data`, `validateUserData return false.`, {
             params: { user }

@@ -8,7 +8,7 @@ const { FB, FacebookApiException } = require('fb');
 
 const _ = require('lodash');
 
-let { UserSchema, UserPersonalDataSchema, USER_PROVIDERS } = require('./user.schema');
+let { UserSchema, USER_PROVIDERS } = require('./user.schema');
 
 // validate custom jwt related config variable 
 const jwtTimeOut = (3 * 60 * 60); // 3 h exp T.O for token
@@ -144,7 +144,6 @@ UserSchema.methods.addToken = async function (token) {
 
 UserSchema.methods.setPersonalData = async function (data) {
     const user = this;
-    // const personalData = new UserPersonalDataSchema(data);
     try {
         // await user.update();
         const userDoc = await User.findByIdAndUpdate(
@@ -162,7 +161,6 @@ UserSchema.methods.setPersonalData = async function (data) {
 
 UserSchema.methods.matchPassword = async function (password) {
     const user = this;
-    // const personalData = new UserPersonalDataSchema(data);
     try {
         return await bcrypt.compare(password, user.authData.password);
     } catch (e) {
