@@ -239,7 +239,7 @@ usersRoute.post('/g', async (req, res) => {
             console.log('HERE 0000003')
             await cart.save();
             console.log('HERE 0000004')
-            await user.addToken(idToken);
+            // await user.addToken(idToken);
 
             console.log('HERE 0000005')
         console.log(JSON.stringify(user, undefined, 2));
