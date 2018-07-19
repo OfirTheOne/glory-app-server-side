@@ -200,6 +200,7 @@ usersRoute.post('/g', async (req, res) => {
                     firstName: payload['given_name']
                 }
             })).save(); 
+            
             console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
             const cart = new Cart({ ownerId })

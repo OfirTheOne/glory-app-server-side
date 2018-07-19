@@ -354,6 +354,7 @@ UserSchema.statics.findUserByEmail = async function (email) {
 
     try {
         const user = await User.findOne({ 'authData.email': email  });
+        console.log(`from findUserByEmail : ` + JSON.stringify(user, undefined, 2));
         if (!user) {
             throw new Error(`failed to find a user with the email : ${email}.`);
         }
@@ -363,8 +364,6 @@ UserSchema.statics.findUserByEmail = async function (email) {
         console.log(`from UserSchema.statics.findUserByEmail(${email}) : `, e)
         throw e;
     }
-
-
 }
 
 /**
@@ -382,6 +381,7 @@ UserSchema.pre('save', async function (next) {
             const salt = await bcrypt.genSalt(10);
             const hash = await bcrypt.hash(user.authData.password, salt);
             user.authData.password = hash;
+            console.log(`from User.pre('save') : ` + JSON.stringify(user, undefined, 2));
             next();
         } catch (e) {
             next(e);
