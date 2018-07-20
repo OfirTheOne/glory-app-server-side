@@ -82,7 +82,7 @@ const UserSchema = new mongoose.Schema({
             minlength: 1,
             unique: true,
             sparse: true,
-            // partialFilterExpression: {email: {$type: 'string'}},
+            partialFilterExpression: {email: {$exists: true}},
             validate: {
                 validator: validator.isEmail,
                 message: `{VALUE} is not a vaild email.`
