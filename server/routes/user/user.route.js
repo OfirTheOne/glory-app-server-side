@@ -213,6 +213,8 @@ usersRoute.post('/g', async (req, res) => {
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
+            console.log(`finishs step 3 - SIGN-UP`);        
+
             return res.status(200).send({
                 data: {
                     signup: true,
