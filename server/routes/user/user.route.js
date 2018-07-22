@@ -2,6 +2,8 @@
 const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
+const {ValidationService : vu} = require('../../utils/custom-validation-service/validtion.servic')
+
 const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 
 // mongoose models
@@ -240,7 +242,7 @@ usersRoute.post('/c', async (req, res) => {
     logger.info(`POST: /users/c`, `Enter`);
 
     // **** 1 **** - validateion of the req body
-    if (!validateCustomSignRequest(req.body)) {
+    if (!validateRequestBody__POST_users_c(req.body)) {
         return res.status(400).send('request body missing parameters.');
     }
 
@@ -337,10 +339,11 @@ usersRoute.post('/data', authenticate, async (req, res) => {
  * */
     logger.info(`POST: /users/data`, `Enter`);
 
-    const data = _.pick(req.body.data, ['lastName', 'firstName', 'birthDate', 'gender']);
+    let data = _.pick(req.body.data, ['personalData', 'address']);
+
     logger.info(`POST: /users/data`, ``, { params : { data }});
     
-    if (validateUserData(req.body)) {
+    if (validateRequestBody__POST_users_data(data)) {
         const user = req.user;
         try {
             const updateUser = await user.setPersonalData(data);  
@@ -351,11 +354,11 @@ usersRoute.post('/data', authenticate, async (req, res) => {
                     authValue: req.authValue,
                 }
             });  
-        } catch (e) {
+        } catch (error) {
             logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
-                params: { user, error:  e }
+                params: { user, error }
             });
-            return res.status(400).send(e);
+            return res.status(400).send(error);
         }
     } else {
         logger.warn(`POST: /users/data`, `validateUserData return false.`, {
@@ -501,85 +504,58 @@ module.exports = {
 /** validation 
  * @param {Object} reqBody 
  */
-const validateCustomSignRequest = (reqBody) => {
-    if ((reqBody.email == undefined || reqBody.email == null) || (reqBody.password == undefined || reqBody.password == null)) {
-        return false;
-    } else {
-        return true;
-    }
+const validateRequestBody__POST_users_c = (reqBody) => {
+    const signData = _.pick(reqBody, [
+        'email', 
+        'password'
+    ])
+
+    if (VALID.isString(signData.email) &&
+        !VALID.isStringUndefinedOrEmpty(signData.email) &&
+        VALID.isString(signData.password) &&
+        !VALID.isStringUndefinedOrEmpty(signData.password)) {
+            return true;
+    } 
 }
 
 /** validation 
- * @description - validate that if a field exists is value valide.
  * @param {Object} data - contains fileds : firstName, lastName, birthDate and gender.
  *
  * @returns true if all the existed fileds are valide.
  */
-const validateUserData = (data) => {
-    if (data.lastName !== undefined && data.lastName != null) {
-        if (!validator.isAlpha(data.lastName)) {
-            return false;
+const validateRequestBody__POST_users_data = (data) => {
+    const personalData = _.pick(data.personalData, [
+        'lastName', 
+        'firstName', 
+        'birthDate', 
+        'gender'
+    ]);
+    const addressData = _.pick(data, [
+        'contry', 
+        'city', 
+        'address', 
+        'postcode'
+    ]);
+
+    if(!VALID.isObjectEmpty(personalData)) {
+        if (vu.isStringWordsSeries(data.lastName) &&
+            vu.isStringWordsSeries(data.firstName) &&
+            vu.isString(data.gender) && ['male', 'female'].includes(data.gender) &&
+            !vu.isObjectEmpty(data.birthDate) && !vu.validateBirthDateObject(data.birthDate)) {
+                return true;
         }
-    }
-    if (data.firstName != undefined && data.firstName != null) {
-        if (!validator.isAlpha(data.firstName)) {
-            return false;
+    } else if(!VALID.isObjectEmpty(addressData)) {
+        if (vu.isStringWordsSeries(data.contry) &&
+            vu.isStringWordsSeries(data.city) && 
+            vu.isStringWordsSeries(data.address) &&
+            vu.isStringWordsSeries(data.postcode)) {
+            return true;
         }
+
     }
-    if (data.birthDate != undefined && data.birthDate != null) {
-        if (!validateBirthDate(data.birthDate)) {
-            return false;
-        }
-    }
-    if (data.gender != undefined && data.gender != null) {
-        if (!['male', 'female'].includes(data.gender)) {
-            return false;
-        }
-    }
-    return true;
 }
 
-/** validation 
- * @param { Object } birthDate contains year, month, day fields.
- * @returns true if the fields year, month, day all numeric and follow the calender rulls. 
- */
-const validateBirthDate = (birthDate) => {
 
-    try {
-        const y = parseInt(birthDate.year);
-        const m = parseInt(birthDate.month);
-        const d = parseInt(birthDate.day);
-        const curYear = new Date().getFullYear();
-        if (!_.inRange(y, 1900, curYear)) {
-            return false;
-        }
-        if (!_.inRange(m, 1, 12)) {
-            return false;
-        }
-        switch (m) {
-            case 2:
-                if ((y % 4 == 0 && _.inRange(d, 1, 29)) || _.inRange(d, 1, 28)) {
-                    return true;
-                }
-                break;
-            case 1 | 3 | 5 | 7 | 8 | 10 | 12:
-                if (_.inRange(d, 1, 31)) {
-                    return true;
-                }
-                break;
-
-            default:
-                if (_.inRange(d, 1, 30)) {
-                    return true;
-                }
-                break;
-        }
-        return false;
-    } catch (e) {
-        console.log(e);
-        return false;
-    }
-}
 
 const isUserDataDefined = (user) => {
     let isDefine = (user.personalData != undefined) && (user.personalData.firstName != undefined);

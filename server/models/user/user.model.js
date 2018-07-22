@@ -145,10 +145,15 @@ UserSchema.methods.addToken = async function (token) {
 UserSchema.methods.setPersonalData = async function (data) {
     const user = this;
     try {
+        const {personalData} = data;
+        const {address} = data;
+        console.log('personalData : '+ JSON.stringify(personalData));
+        console.log('address : '+ JSON.stringify(address))
+
         // await user.update();
         const userDoc = await User.findByIdAndUpdate(
             user._id,
-            { $set: { personalData: data } },
+            { $set: { personalData, address } },
             { new: true }
         );
         console.log(`setPersonalData(data) : return value -  ${JSON.stringify(userDoc, undefined, 2)}`)
