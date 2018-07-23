@@ -549,7 +549,7 @@ const validateRequestBody__POST_users_data = (data) => {
                 return true;
         }
     } else if(!ValidationService.isObjectEmpty(addressData)) {
-        if (ValidationService.isStringWordsSeries(data.contry) &&
+        if (ValidationService.isStringWordsSeries(data.country) &&
             ValidationService.isStringWordsSeries(data.city) && 
             ValidationService.isStringWordsSeries(data.address) &&
             ValidationService.isStringWordsSeries(data.postcode)) {
