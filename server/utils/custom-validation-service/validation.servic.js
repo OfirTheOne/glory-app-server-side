@@ -1,5 +1,5 @@
 
-const alphaAndSpaceReqex = '^[a-zA-Z]+( [a-zA-Z]+)*$';
+const alphaAndSpaceReqex = /^[a-zA-Z]+( [a-zA-Z]+)*$/;
 
 
 class ValidationService {
