@@ -365,7 +365,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
             return res.status(400).send(error);
         }
     } else {
-        logger.warn(`POST: /users/data`, `validateUserData return false.`, {
+        logger.warn(`POST: /users/data`, `validateRequestBody__POST_users_data return false.`, {
             params: { user }
         });
         return res.status(400).send('user data invalid.');
@@ -540,8 +540,11 @@ const validateRequestBody__POST_users_data = (data) => {
         'address', 
         'postcode'
     ]);
+console.log(personalData, addressData);
 
+console.log('HERE 000001');
     if(!ValidationService.isObjectEmpty(personalData)) {
+console.log('HERE 000002');
         if (ValidationService.isStringWordsSeries(personalData.lastName) &&
             ValidationService.isStringWordsSeries(personalData.firstName) &&
             ValidationService.isString(personalData.gender) && 
@@ -551,6 +554,7 @@ const validateRequestBody__POST_users_data = (data) => {
                 return true;
         }
     } else if(!ValidationService.isObjectEmpty(addressData)) {
+console.log('HERE 000003');
         if (ValidationService.isStringWordsSeries(addressData.country) &&
             ValidationService.isStringWordsSeries(addressData.city) && 
             ValidationService.isStringWordsSeries(addressData.address) &&
