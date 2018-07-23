@@ -1,19 +1,25 @@
 
-const alphaAndSpaceReqex = /^[a-zA-Z]+( [a-zA-Z]+)*$/;
 
+/* regex */
+
+const alphaAndSpaceRegex = /^[a-zA-Z]+( [a-zA-Z]+)*$/;
+const ilPostcodeRegex = /^\d{5}(\d{2})?$/
+
+
+/* clas defenition */
 
 class ValidationService {
-
     
     constructor() { }
     
-    static isObjectNullOrUndefine(obj) {
+    static isObjectNullOrUndefined(obj) {
         return (obj === null || obj === undefined);
     }
 
     static isStringUndefinedOrEmpty(str) {
         return (str === null || str === undefined || str === '') ;
     }
+
 
     static isString(str) {
         return typeof str === 'string';
@@ -22,21 +28,36 @@ class ValidationService {
     static isObjectEmpty(obj) {
         if(typeof obj === 'object') {
             return Object.keys(obj).length == 0;
-        } 
-    }
-
-    static isStringAlpaAndSpaces(str) {
-        if(typeof str === 'string') {
-            return alphaAndSpaceReqex.test(str);
+        } else {
+            return false;
         }
     }
 
+    static isStringTrimAlpaWordsSeries(str) {
+        if(typeof str === 'string') {
+            return alphaAndSpaceRegex.test(str);
+        } else {
+            return false;
+        }
+    }
+
+    
+    static isParseILPostcode(stringOrNumber) {
+        if(typeof stringOrNumber === 'string' || typeof stringOrNumber === 'number') {
+            return ilPostcodeRegex.test(stringOrNumber);
+        } else {
+            return false;
+        }
+    }
+
+    /*
     static isStringWordsSeries(str) {
         return (ValidationService.isString(str) && 
                 !ValidationService.isStringUndefinedOrEmpty(str) && 
                 ValidationService.isStringAlpaAndSpaces(str));
     }
 
+    */
      /** validation 
     * @param { day : Number, month : Number, year : Number } birthDate contains year, month, day fields.
     * @returns true if the fields year, month, day all numeric and follow the calender rulls. 

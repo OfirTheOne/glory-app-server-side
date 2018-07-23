@@ -545,8 +545,8 @@ console.log(personalData, addressData);
 console.log('HERE 000001');
     if(!ValidationService.isObjectEmpty(personalData)) {
 console.log('HERE 000002');
-        if (ValidationService.isStringWordsSeries(personalData.lastName) &&
-            ValidationService.isStringWordsSeries(personalData.firstName) &&
+        if (ValidationService.isStringTrimAlpaWordsSeries(personalData.lastName) &&
+            ValidationService.isStringTrimAlpaWordsSeries(personalData.firstName) &&
             ValidationService.isString(personalData.gender) && 
             ['male', 'female'].includes(personalData.gender) &&
             !ValidationService.isObjectEmpty(personalData.birthDate) && 
@@ -555,10 +555,10 @@ console.log('HERE 000002');
         }
     } else if(!ValidationService.isObjectEmpty(addressData)) {
 console.log('HERE 000003');
-        if (ValidationService.isStringWordsSeries(addressData.country) &&
-            ValidationService.isStringWordsSeries(addressData.city) && 
-            ValidationService.isStringWordsSeries(addressData.address) &&
-            ValidationService.isStringWordsSeries(addressData.postcode)) {
+        if (ValidationService.isStringTrimAlpaWordsSeries(addressData.country) &&
+            ValidationService.isStringTrimAlpaWordsSeries(addressData.city) && 
+            ValidationService.isStringTrimAlpaWordsSeries(addressData.address) &&
+            ValidationService.isParseILPostcode(addressData.postcode)) {
             return true;
         }
 
