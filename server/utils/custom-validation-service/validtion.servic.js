@@ -2,7 +2,7 @@
 const alphaAndSpaceReqex = '^[a-zA-Z]+( [a-zA-Z]+)*$';
 
 
-class ValidtionService {
+class ValidationService {
 
     
     constructor() { }
@@ -81,5 +81,5 @@ class ValidtionService {
 }
 
 module.exports = {
-    ValidtionService
+    ValidationService
 }
