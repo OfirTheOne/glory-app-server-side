@@ -12,6 +12,7 @@ class ValidationService {
     
     constructor() { }
     
+    // existens
     static isObjectNullOrUndefined(obj) {
         return (obj === null || obj === undefined);
     }
@@ -19,7 +20,6 @@ class ValidationService {
     static isStringUndefinedOrEmpty(str) {
         return (str === null || str === undefined || str === '') ;
     }
-
 
     static isString(str) {
         return typeof str === 'string';
@@ -33,6 +33,8 @@ class ValidationService {
         }
     }
 
+
+    // patters
     static isStringTrimAlpaWordsSeries(str) {
         if(typeof str === 'string') {
             return alphaAndSpaceRegex.test(str);
@@ -41,7 +43,6 @@ class ValidationService {
         }
     }
 
-    
     static isParseILPostcode(stringOrNumber) {
         if(typeof stringOrNumber === 'string' || typeof stringOrNumber === 'number') {
             return ilPostcodeRegex.test(stringOrNumber);
@@ -49,16 +50,10 @@ class ValidationService {
             return false;
         }
     }
+    
 
+    // complex
     /*
-    static isStringWordsSeries(str) {
-        return (ValidationService.isString(str) && 
-                !ValidationService.isStringUndefinedOrEmpty(str) && 
-                ValidationService.isStringAlpaAndSpaces(str));
-    }
-
-    */
-     /** validation 
     * @param { day : Number, month : Number, year : Number } birthDate contains year, month, day fields.
     * @returns true if the fields year, month, day all numeric and follow the calender rulls. 
     */

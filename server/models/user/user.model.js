@@ -4,9 +4,10 @@ const { mongoose } = require('../../db/mongoose');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
-const { FB, FacebookApiException } = require('fb');
+const { FB } = require('fb');
 
 const _ = require('lodash');
+const {ValidationService} = require('../../utils/custom-validation-service/validation.servic'); 
 
 let { UserSchema, USER_PROVIDERS } = require('./user.schema');
 
@@ -142,7 +143,7 @@ UserSchema.methods.addToken = async function (token) {
     }
 };
 
-UserSchema.methods.setPersonalData = async function (data) {
+UserSchema.methods.setUserData = async function (data) {
     const user = this;
     try {
         const {personalData} = data;
@@ -150,12 +151,24 @@ UserSchema.methods.setPersonalData = async function (data) {
         console.log('personalData : '+ JSON.stringify(personalData));
         console.log('address : '+ JSON.stringify(address))
 
-        // await user.update();
-        const userDoc = await User.findByIdAndUpdate(
-            user._id,
-            { $set: { personalData, address } },
-            { new: true }
-        );
+        // force that only one can be updated. assume that if 'personalData' define end not empty 
+        // it's the object that need to be updated else chack the same on 'address' object.
+        let userDoc;
+        if(!ValidationService.isObjectNullOrUndefined(personalData) && 
+           !ValidationService.isObjectEmpty(personalData)) {
+            userDoc = await User.findByIdAndUpdate(
+                user._id,
+                { $set: { personalData } },
+                { new: true }
+            );
+        } else if(!ValidationService.isObjectNullOrUndefined(address) && 
+                  !ValidationService.isObjectEmpty(address)) {
+            userDoc = await User.findByIdAndUpdate(
+                user._id,
+                { $set: { address } },
+                { new: true }
+            );
+        }
         console.log(`setPersonalData(data) : return value -  ${JSON.stringify(userDoc, undefined, 2)}`)
         return userDoc;
 

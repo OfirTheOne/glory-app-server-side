@@ -306,7 +306,7 @@ usersRoute.post('/c', async (req, res) => {
             // updating his personal data
             let dataDefined = false;
             if (req.body.data != undefined) {
-                await user.setPersonalData(req.body.data);
+                await user.setUserData(req.body.data);
                 dataDefined = true;
             }
 
@@ -350,7 +350,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
     if (validateRequestBody__POST_users_data(data)) {
         console.log('******** after validation.');
         try {
-            const updateUser = await user.setPersonalData(data);  
+            const updateUser = await user.setUserData(data);  
             logger.info(`POST: /users/data`, `Exit`, { params: { updateUser } });
             return res.send({
                 data: {
@@ -359,7 +359,7 @@ usersRoute.post('/data', authenticate, async (req, res) => {
                 }
             });  
         } catch (error) {
-            logger.error(`POST: /users/data`, `error at setPersonalData method.`, {
+            logger.error(`POST: /users/data`, `error at setUserData method.`, {
                 params: { user, error }
             });
             return res.status(400).send(error);
