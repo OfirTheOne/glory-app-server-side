@@ -512,10 +512,10 @@ const validateRequestBody__POST_users_c = (reqBody) => {
         'password'
     ])
 
-    if (VALID.isString(signData.email) &&
-        !VALID.isStringUndefinedOrEmpty(signData.email) &&
-        VALID.isString(signData.password) &&
-        !VALID.isStringUndefinedOrEmpty(signData.password)) {
+    if (vu.isString(signData.email) &&
+        !vu.isStringUndefinedOrEmpty(signData.email) &&
+        vu.isString(signData.password) &&
+        !vu.isStringUndefinedOrEmpty(signData.password)) {
             return true;
     } 
 }
@@ -539,14 +539,14 @@ const validateRequestBody__POST_users_data = (data) => {
         'postcode'
     ]);
 
-    if(!VALID.isObjectEmpty(personalData)) {
+    if(!vu.isObjectEmpty(personalData)) {
         if (vu.isStringWordsSeries(data.lastName) &&
             vu.isStringWordsSeries(data.firstName) &&
             vu.isString(data.gender) && ['male', 'female'].includes(data.gender) &&
             !vu.isObjectEmpty(data.birthDate) && !vu.validateBirthDateObject(data.birthDate)) {
                 return true;
         }
-    } else if(!VALID.isObjectEmpty(addressData)) {
+    } else if(!vu.isObjectEmpty(addressData)) {
         if (vu.isStringWordsSeries(data.contry) &&
             vu.isStringWordsSeries(data.city) && 
             vu.isStringWordsSeries(data.address) &&
