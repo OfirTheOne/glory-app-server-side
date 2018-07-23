@@ -534,8 +534,8 @@ const validateRequestBody__POST_users_data = (data) => {
         'birthDate', 
         'gender'
     ]);
-    const addressData = _.pick(data, [
-        'contry', 
+    const addressData = _.pick(data.address, [
+        'country', 
         'city', 
         'address', 
         'postcode'
