@@ -542,17 +542,19 @@ const validateRequestBody__POST_users_data = (data) => {
     ]);
 
     if(!ValidationService.isObjectEmpty(personalData)) {
-        if (ValidationService.isStringWordsSeries(data.lastName) &&
-            ValidationService.isStringWordsSeries(data.firstName) &&
-            ValidationService.isString(data.gender) && ['male', 'female'].includes(data.gender) &&
-            !ValidationService.isObjectEmpty(data.birthDate) && !ValidationService.validateBirthDateObject(data.birthDate)) {
+        if (ValidationService.isStringWordsSeries(personalData.lastName) &&
+            ValidationService.isStringWordsSeries(personalData.firstName) &&
+            ValidationService.isString(personalData.gender) && 
+            ['male', 'female'].includes(personalData.gender) &&
+            !ValidationService.isObjectEmpty(personalData.birthDate) && 
+            !ValidationService.validateBirthDateObject(personalData.birthDate)) {
                 return true;
         }
     } else if(!ValidationService.isObjectEmpty(addressData)) {
-        if (ValidationService.isStringWordsSeries(data.country) &&
-            ValidationService.isStringWordsSeries(data.city) && 
-            ValidationService.isStringWordsSeries(data.address) &&
-            ValidationService.isStringWordsSeries(data.postcode)) {
+        if (ValidationService.isStringWordsSeries(addressData.country) &&
+            ValidationService.isStringWordsSeries(addressData.city) && 
+            ValidationService.isStringWordsSeries(addressData.address) &&
+            ValidationService.isStringWordsSeries(addressData.postcode)) {
             return true;
         }
 
