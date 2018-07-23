@@ -2,7 +2,7 @@
 const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
-const {ValidationService : vu} = require('../../utils/custom-validation-service/validtion.servic')
+const {ValidationService} = require('../../utils/custom-validation-service/validtion.servic')
 
 const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 
@@ -512,10 +512,10 @@ const validateRequestBody__POST_users_c = (reqBody) => {
         'password'
     ])
 
-    if (vu.isString(signData.email) &&
-        !vu.isStringUndefinedOrEmpty(signData.email) &&
-        vu.isString(signData.password) &&
-        !vu.isStringUndefinedOrEmpty(signData.password)) {
+    if (ValidationService.isString(signData.email) &&
+        !ValidationService.isStringUndefinedOrEmpty(signData.email) &&
+        ValidationService.isString(signData.password) &&
+        !ValidationService.isStringUndefinedOrEmpty(signData.password)) {
             return true;
     } 
 }
@@ -539,18 +539,18 @@ const validateRequestBody__POST_users_data = (data) => {
         'postcode'
     ]);
 
-    if(!vu.isObjectEmpty(personalData)) {
-        if (vu.isStringWordsSeries(data.lastName) &&
-            vu.isStringWordsSeries(data.firstName) &&
-            vu.isString(data.gender) && ['male', 'female'].includes(data.gender) &&
-            !vu.isObjectEmpty(data.birthDate) && !vu.validateBirthDateObject(data.birthDate)) {
+    if(!ValidationService.isObjectEmpty(personalData)) {
+        if (ValidationService.isStringWordsSeries(data.lastName) &&
+            ValidationService.isStringWordsSeries(data.firstName) &&
+            ValidationService.isString(data.gender) && ['male', 'female'].includes(data.gender) &&
+            !ValidationService.isObjectEmpty(data.birthDate) && !ValidationService.validateBirthDateObject(data.birthDate)) {
                 return true;
         }
-    } else if(!vu.isObjectEmpty(addressData)) {
-        if (vu.isStringWordsSeries(data.contry) &&
-            vu.isStringWordsSeries(data.city) && 
-            vu.isStringWordsSeries(data.address) &&
-            vu.isStringWordsSeries(data.postcode)) {
+    } else if(!ValidationService.isObjectEmpty(addressData)) {
+        if (ValidationService.isStringWordsSeries(data.contry) &&
+            ValidationService.isStringWordsSeries(data.city) && 
+            ValidationService.isStringWordsSeries(data.address) &&
+            ValidationService.isStringWordsSeries(data.postcode)) {
             return true;
         }
 
