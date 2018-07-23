@@ -345,8 +345,10 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 
     logger.info(`POST: /users/data`, ``, { params : { data }});
     
+    const user = req.user;
+    console.log('user : ', user);
     if (validateRequestBody__POST_users_data(data)) {
-        const user = req.user;
+        console.log('******** after validation.');
         try {
             const updateUser = await user.setPersonalData(data);  
             logger.info(`POST: /users/data`, `Exit`, { params: { updateUser } });
