@@ -32,9 +32,9 @@ class ValidationService {
     }
 
     static isStringWordsSeries(str) {
-        return (ValidtionService.isString(str) && 
-                !ValidtionService.isStringUndefinedOrEmpty(str) && 
-                ValidtionService.isStringAlpaAndSpaces(str));
+        return (ValidationService.isString(str) && 
+                !ValidationService.isStringUndefinedOrEmpty(str) && 
+                ValidationService.isStringAlpaAndSpaces(str));
     }
 
      /** validation 
