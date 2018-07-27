@@ -123,10 +123,13 @@ UserSchema.methods.removeToken = async function (token) {
 };
 
 UserSchema.methods.addToken = async function (token) {
+    console.log(`addToken()`);
     const user = this;
+    console.log(user);
     try {
         const isTokenExistsInArray = user.authData.tokens.some((element) => element.token == token);
         if (!isTokenExistsInArray) {
+            // user.authData.tokens.push()
             return await user.update({
                 authData: {
                     $push: {

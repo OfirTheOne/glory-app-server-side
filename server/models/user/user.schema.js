@@ -102,25 +102,28 @@ const UserSchema = new mongoose.Schema({
             default: 1,
             validate: (value) => [1, 2].includes(value)
         },
-        tokens: [{
-            access: {
-                type: String,
-                // required: true,
-            },
-            expDate: {
-                type: Number,
-                // required: true,
-            },
-            token: {
-                type: String,
-                // required: true,
-            },
-            deviceIp: {
-                type: String,
-                // required: true,
-                validate: validator.isIP
-            }
-        }],
+        tokens: {
+            type: [{
+                    access: {
+                        type: String,
+                        // required: true,
+                    },
+                    expDate: {
+                        type: Number,
+                        // required: true,
+                    },
+                    token: {
+                        type: String,
+                        // required: true,
+                    },
+                    deviceIp: {
+                        type: String,
+                        // required: true,
+                        validate: validator.isIP
+                    }
+            }],
+            default: []
+        },
     },
     cartId: {
         type: mongoose.Schema.Types.ObjectId
