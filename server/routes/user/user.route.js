@@ -195,13 +195,14 @@ usersRoute.post('/g', async (req, res) => {
         // if the user dont exists in the db 
         console.log(`start step 3 - SIGN-UP`);        
         try {
-            user = await (new User({
-                authData: {  email, provider }, 
-                personalData: {
-                    lastName: payload['family_name'],
-                    firstName: payload['given_name']
-                }
-            })).save(); 
+            user = new User({
+                    authData: {  email, provider }, 
+                    personalData: {
+                        lastName: payload['family_name'],
+                        firstName: payload['given_name']
+                    }
+                });
+            await user.save(); 
             
             console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
