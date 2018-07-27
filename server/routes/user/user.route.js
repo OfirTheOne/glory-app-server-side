@@ -179,6 +179,7 @@ usersRoute.post('/g', async (req, res) => {
 
         try {
             await user.addToken(idToken);
+            console.log(`finishs step 3 - SIGN-IN`);        
             return res.status(200).send({
                 data: {
                     signin: true,

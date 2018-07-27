@@ -129,20 +129,15 @@ UserSchema.methods.addToken = async function (token) {
     try {
         const isTokenExistsInArray = user.authData.tokens.some((element) => element.token == token);
         if (!isTokenExistsInArray) {
-            // user.authData.tokens.push()
-            return await user.update({
-                authData: {
-                    $push: {
-                        tokens: {
-                            token,
-                            'access': 'auth'
-                        }
-                    }
-                }
+            user.authData.tokens.push({
+                 token,
+                access: 'auth'
             });
+            return await user.save();
         }
-    } catch (e) {
-        throw e;
+    } catch (error) {
+        console.log(error);
+        throw error;
     }
 };
 
