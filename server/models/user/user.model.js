@@ -141,13 +141,35 @@ UserSchema.methods.addToken = async function (token) {
     }
 };
 
+UserSchema.methods.matchPassword = async function (password) {
+    const user = this;
+    try {
+        return await bcrypt.compare(password, user.authData.password);
+    } catch (e) {
+        throw e;
+    }
+}
+
+UserSchema.statics.findByCredentials = async function (email, password) {
+    const User = this;
+    const user = await User.findUserByEmail(email);
+
+    const res = user.matchPassword(password);
+    if (res) {
+        return user;
+    } else {
+        throw new Error('password failed.');
+    }
+};
+
+
 UserSchema.methods.setUserData = async function (data) {
+    console.log('setUserData(data) : '+ JSON.stringify(data));
+
     const user = this;
     try {
         const {personalData} = data;
         const {address} = data;
-        console.log('personalData : '+ JSON.stringify(personalData));
-        console.log('address : '+ JSON.stringify(address))
 
         // force that only one can be updated. assume that if 'personalData' define end not empty 
         // it's the object that need to be updated else chack the same on 'address' object.
@@ -167,7 +189,7 @@ UserSchema.methods.setUserData = async function (data) {
                 { new: true }
             );
         }
-        console.log(`setPersonalData(data) : return value -  ${JSON.stringify(userDoc, undefined, 2)}`)
+        console.log(`setUserData(data) : return value -  ${JSON.stringify(userDoc, undefined, 2)}`)
         return userDoc;
 
     } catch (e) {
@@ -175,105 +197,89 @@ UserSchema.methods.setUserData = async function (data) {
     }
 }
 
-UserSchema.methods.matchPassword = async function (password) {
-    const user = this;
+UserSchema.statics.findUserByEmail = async function (email) {
+    console.log(email);
+    const User = this;
+
     try {
-        return await bcrypt.compare(password, user.authData.password);
+        const user = await User.findOne({ 'authData.email': email  });
+        console.log(`from findUserByEmail : ` + JSON.stringify(user, undefined, 2));
+        if (!user) {
+            throw new Error(`failed to find a user with the email : ${email}.`);
+        }
+        return user;
+
     } catch (e) {
+        console.log(`from UserSchema.statics.findUserByEmail(${email}) : `, e)
         throw e;
     }
 }
-
-
-UserSchema.statics.createNewUser = function (email, provider, password) {
-    // const User = this;
-
-    const authData = {
-        email,
-        provider,
-        tokens: [],
-        // in cases of google / facebook signing 'password' == undefined
-        password
-    };
-
-    const user = new User({ authData });
-
-    return user;
-}
-
-UserSchema.statics.findByCredentials = async function (email, password) {
-    const User = this;
-    const user = await User.findUserByEmail(email);
-
-    const res = user.matchPassword(password);
-    if (res) {
-        return user;
-    } else {
-        throw new Error('password failed.');
-    }
-};
 
 UserSchema.statics.findByTokenVerification = async function (req, token, provider) {
     console.log('method : findByTokenVerification(req, token, provider)');
     console.log(`params :\n req - ${req},\n token - ${token},\n provider - ${provider} \n`);
 
     const User = this;
+
+    // 1 - verify the token and get the verification result.
+    let verificationResult;
     try {
-        const verificationResult = await User.verifyToken(provider, token);
-        let queryObj;
-        switch (provider) {
-            case 'custom': {
-                console.log('case : custom');
-                queryObj = {
-                    _id: verificationResult._id,
-                    authData: {
-                        provider,
-                        'tokens.token': token,
-                        'tokens.access': 'auth'
-                    } 
-                };
-                break;
-            }
+        verificationResult = await User.verifyToken(provider, token);
+    } catch (error) {
+        // if throw TokenExpiredError must let the client know    
+        console.log('findByTokenVerification', JSON.stringify(error, undefined, 2));    
+        throw error;
+    }
 
-            case 'google': {
-                console.log('case : google');
-                const payload = verificationResult.getPayload();
-                req.authValue = payload['sub'];
-                queryObj = {
-                    'authData.email': payload.email,    
-                    'authData.provider' : provider
-                };
-                break;
-            }
-
-            case 'facebook': {
-                console.log('case : facebook');
-                const verificationResult = await User.verifyFacebookToken(token);
-                req.authValue = verificationResult.id;
-                queryObj = {
-                    'authData.email': verificationResult.email,
-                    'authData.provider': provider
-                    
-                };
-                break;
-            }
-
-            default: break;
+    // 2 - by the verification result and the provider construct query object.  
+    let queryObj;
+    switch (provider) {
+        case 'custom': {
+            console.log('case : custom');
+            queryObj = {
+                _id: verificationResult._id,
+                authData: {
+                    provider,
+                    'tokens.token': token,
+                    'tokens.access': 'auth'
+                } 
+            };
+            break;
         }
+        case 'google': {
+            console.log('case : google');
+            const payload = verificationResult.getPayload();
+            req.authValue = payload['sub'];
+            queryObj = {
+                'authData.email': payload.email,    
+                'authData.provider' : provider
+            };
+            break;
+        }
+        case 'facebook': {
+            console.log('case : facebook');
+            const verificationResult = await User.verifyFacebookToken(token);
+            req.authValue = verificationResult.id;
+            queryObj = {
+                'authData.email': verificationResult.email,
+                'authData.provider': provider
+                
+            };
+            break;
+        }
+        default: break;
+    }
 
+    // 3 - exec the quesy - find user by the quesy object.
+    try {
         if (queryObj) {
             return await User.findOne(queryObj);
         }
-
-    } catch (e) {
-        // if throw TokenExpiredError must let the client know        
-        throw e;
+    } catch (error) {
+        throw error;
     }
 };
 
-
-
-// ---------
 UserSchema.statics.verifyToken = async function (provider, token) {
     console.log('method : verifyToken(token, provider)');
     console.log(`params : provider - ${provider}, token - ${token} \n`);
@@ -305,13 +311,13 @@ UserSchema.statics.verifyToken = async function (provider, token) {
                 break;
         }
 
-    } catch (e) {
+    } catch (error) {
         // if throw TokenExpiredError must let the client know        
-        throw e;
+        console.log(error);
+        throw error;
     }
     return verificationResult;
 };
-
 
 UserSchema.statics.verifyCustomToken = async function (token) {
     var decoded;
@@ -363,24 +369,8 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
 
 };
 
-// ---------
-UserSchema.statics.findUserByEmail = async function (email) {
-    console.log(email);
-    const User = this;
 
-    try {
-        const user = await User.findOne({ 'authData.email': email  });
-        console.log(`from findUserByEmail : ` + JSON.stringify(user, undefined, 2));
-        if (!user) {
-            throw new Error(`failed to find a user with the email : ${email}.`);
-        }
-        return user;
 
-    } catch (e) {
-        console.log(`from UserSchema.statics.findUserByEmail(${email}) : `, e)
-        throw e;
-    }
-}
 
 /**
  * exec before every save calling and make sure that the passward that beeing saved on the db 

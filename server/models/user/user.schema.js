@@ -62,10 +62,6 @@ const UserAddressSchema = new mongoose.Schema({
     },
 });
 
-// const UserAuthDataSchema = new mongoose.Schema({
-    
-// });
-
 
 const UserSchema = new mongoose.Schema({
     personalData: {
