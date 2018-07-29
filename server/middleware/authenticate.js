@@ -15,7 +15,8 @@ const authenticate = async (req, res, next) => {
         user = await User.findByTokenVerification(req, token, provider);
     } catch (error) {
         logger.error(`authenticate(req, res, next)`, `token verification failed`, { params: { error }});
-        res.status(401).send(new Error(ERROR.TOKEN_VERIFICATION_ERROR.kind));
+        console.log('authenticate ' , new Error(ERROR.TOKEN_VERIFICATION_ERROR.kind));
+        return res.status(401).send(new Error(ERROR.TOKEN_VERIFICATION_ERROR.kind));
     }
 
     try {
@@ -29,15 +30,15 @@ const authenticate = async (req, res, next) => {
         logger.info(`authenticate(req, res, next)`, `Exit`, { params: { user }});
         next();
 
-    } catch (e) {
+    } catch (error) {
         // if the token expired - remove it from the user tokens and sending the relevent error
         // if (e.message === 'jwt expired') {
         //     // await user.removeToken(token);
         //     logger.error(`authenticate(req, res, next)`, `jwt expired`, { params: { error: e}});
         //     res.status(401).send({ jwtExpError: e });
         // } else {
-            logger.error(`authenticate(req, res, next)`, ``, { params: { error: e}});
-            res.status(401).send(e);
+            logger.error(`authenticate(req, res, next)`, ``, { params: { error }});
+            return res.status(401).send(error);
         // }
     }
 };
