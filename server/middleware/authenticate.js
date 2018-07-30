@@ -15,8 +15,8 @@ const authenticate = async (req, res, next) => {
         user = await User.findByTokenVerification(req, token, provider);
     } catch (error) {
         logger.error(`authenticate(req, res, next)`, `token verification failed`, { params: { error }});
-        console.log('authenticate ' , new Error(ERROR.TOKEN_VERIFICATION_ERROR.kind));
-        return res.status(401).send(new Error(ERROR.TOKEN_VERIFICATION_ERROR.kind));
+        console.log('authenticate ' , ERROR.TOKEN_VERIFICATION_ERROR.kind);
+        return res.status(401).send({error: ERROR.TOKEN_VERIFICATION_ERROR.kind});
     }
 
     try {
