@@ -184,6 +184,35 @@ productsRoute.get('/filter/:q', async (req, res) => {
     }
 });
 
+
+/**
+ * Route getting all products sorted by creation date.   
+ */
+// GET: /products/
+productsRoute.get('/', async (req, res) => {
+    logger.info(`GET: /products/`, `Enter`);
+
+    // exec the query & handle res    
+    try {
+        // fetching the doc
+        const products = await Product.find({}).sort({ _id : -1 } );
+
+        // if doc not exists send 400
+        if (!products) {
+            logger.warn(`GET: /products`, `doc not exists`);
+            return res.status(404).send('doc not exists');
+        }
+        // success - send the doc
+        logger.info(`GET: /products`, `Exit`, {params: {products}});
+        return res.send({data: products});
+    } catch (e) {
+        // error fetching the doc - send 400
+        logger.error(`GET: /products`, `error fetching the doc`, {params: {error: e}});
+        return res.status(400).send('error fetching the doc');
+    }
+});
+
+
 // validate GET: /products/filter/:q request
 /** @description .
  *      #### Validetor for the query GET /products/filter/:q
