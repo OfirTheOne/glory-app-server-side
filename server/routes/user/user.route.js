@@ -33,7 +33,7 @@ usersRoute.get('/', async (req, res) => {
 
     try {
         const users = await User.find({})
-                .project({ 
+                .select({ 
                     'authData.provider': 1,
                     'authData.email': 1,
                     address: 1,
