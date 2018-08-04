@@ -2,7 +2,7 @@
 const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
-const {ValidationService} = require('../../utils/custom-validation-service/validation.servic')
+const { ValidationService } = require('../../utils/custom-validation-service/validation.servic')
 
 const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 
@@ -23,12 +23,39 @@ usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' r
 const logger = new Logger(LogStream.CONSOLE);
 
 
+// ***** routes for db maganment ***** // add admin authentication
+
+usersRoute.get('/', async (req, res) => {
+    /** GET: /users/
+     * Route for getting all users 
+     * */
+    logger.info(`GET: /users`, `Enter`);
+
+    const users = await User.find({})
+            .project({ 
+                'authData.provider': 1,
+                'authData.email': 1,
+                address: 1,
+                personalData: 1,
+                cartId: 1,
+                wishList: 1 
+            });
+    logger.info(`GET: /users`, `Exit`);
+    return res.send({
+        data: {
+            users,
+        }
+    });
+});
+
+
+
 /********* routes *********/
 
 usersRoute.post('/f', async (req, res) => {
-/** POST: /users/f 
- * Route for signup / signin user with facebook
- * */
+    /** POST: /users/f 
+     * Route for signup / signin user with facebook
+     * */
     logger.info(`POST: /users/f`, `Enter`);
 
     const idToken = req.body['idToken'];
@@ -40,7 +67,7 @@ usersRoute.post('/f', async (req, res) => {
     try {
         authTokenResult = await User.verifyFacebookToken(idToken);
     } catch (e) {
-        logger.error(`POST: /users/f`, `verifyFacebookToken failed.`, {params: {error: e}});
+        logger.error(`POST: /users/f`, `verifyFacebookToken failed.`, { params: { error: e } });
         return res.status(400).send(e);
     }
 
@@ -57,14 +84,14 @@ usersRoute.post('/f', async (req, res) => {
     } catch (e) {
         // there is no user with that email
         logger.error(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.`, {
-            params: {error: e}
+            params: { error: e }
         });
         console.log(e);
     }
 
     // ****** Position 3 ****** // - Handeling two cases : SIGNIN & SIGNUP
     // ******************************************************************* //
-    if (user) {  
+    if (user) {
         // if the user exists in the db 
         console.log(`start step 3 - SIGN-IN`);
         if (user.authData.provider != provider) {
@@ -88,12 +115,12 @@ usersRoute.post('/f', async (req, res) => {
             console.log(e);
         }
     }
-    else { 
+    else {
         // if the user dont exists in the db 
         console.log(`start step 3 - SIGN-UP`);
         try {
             user = await (new User({
-                authData: { email, provider }, 
+                authData: { email, provider },
                 personalData: {
                     lastName: authTokenResult['last_name'],
                     firstName: authTokenResult['name']
@@ -125,13 +152,13 @@ usersRoute.post('/f', async (req, res) => {
 
 
 usersRoute.post('/g', async (req, res) => {
-/** POST: /users/g 
- * Route for signup / signin user with google
- * 
- * doc : 
- *  https://developers.google.com/identity/sign-in/web/backend-auth
- *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
- * */    
+    /** POST: /users/g 
+     * Route for signup / signin user with google
+     * 
+     * doc : 
+     *  https://developers.google.com/identity/sign-in/web/backend-auth
+     *  https://google.github.io/google-auth-library-nodejs/classes/_auth_loginticket_.loginticket.html
+     * */
     logger.info(`POST: /users/g`, `Enter`);
     const idToken = req.body['idToken'];
     const provider = 'google';
@@ -142,18 +169,18 @@ usersRoute.post('/g', async (req, res) => {
     try { //
         authTokenResult = await User.verifyGoogleToken(idToken);
     } catch (e) {
-        logger.error(`POST: /users/f`, `verifyGoogleToken failed.`, {params: {error: e}});
+        logger.error(`POST: /users/f`, `verifyGoogleToken failed.`, { params: { error: e } });
         return res.status(400).send(new Error('token validetion failed.'));
     }
 
     // ****** Position 2 ****** // - find user obj
     // ******************************************************************* //
-        /*
-        * the payload object contains : 
-        *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
-        *  email?: string;  profile?: string;  picture?: string;  name?: string;  given_name?: string;
-        *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
-        * */
+    /*
+    * the payload object contains : 
+    *  iss: string;  at_hash?: string;  email_verified?: boolean;  sub: string;  azp?: string;
+    *  email?: string;  profile?: string;  picture?: string;  name?: string;  given_name?: string;
+    *  family_name?: string;  aud: string;  iat: number;  exp: number;  nonce?: string;  hd?: string;
+    * */
 
     const payload = authTokenResult.getPayload();
     const email = payload['email'];
@@ -168,7 +195,7 @@ usersRoute.post('/g', async (req, res) => {
 
     // ****** Position 3 ****** // - handeling two cases : SIGNIN & SIGNUP
     // ******************************************************************* //
-    if (user) {  
+    if (user) {
         // if the user exists in the db 
         console.log(`start step 3 - SIGN-IN`);
         if (user.authData.provider != provider) {
@@ -179,7 +206,7 @@ usersRoute.post('/g', async (req, res) => {
 
         try {
             await user.addToken(idToken);
-            console.log(`finishs step 3 - SIGN-IN`);        
+            console.log(`finishs step 3 - SIGN-IN`);
             return res.status(200).send({
                 data: {
                     signin: true,
@@ -191,20 +218,20 @@ usersRoute.post('/g', async (req, res) => {
             console.log(e);
         }
     }
-    else { 
-        
+    else {
+
         // if the user dont exists in the db 
-        console.log(`start step 3 - SIGN-UP`);        
+        console.log(`start step 3 - SIGN-UP`);
         try {
             user = new User({
-                    authData: {  email, provider }, 
-                    personalData: {
-                        lastName: payload['family_name'],
-                        firstName: payload['given_name']
-                    }
-                });
-            await user.save(); 
-            
+                authData: { email, provider },
+                personalData: {
+                    lastName: payload['family_name'],
+                    firstName: payload['given_name']
+                }
+            });
+            await user.save();
+
             console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
             const cart = new Cart({ ownerId })
@@ -215,7 +242,7 @@ usersRoute.post('/g', async (req, res) => {
             // note to self : the returning of the userId to the client have a data integrity minning - by compering 
             // the returned userId value with the one the client possess can detect any interaption in the sending of the idtoken 
             // from the client to the server.
-            console.log(`finishs step 3 - SIGN-UP`);        
+            console.log(`finishs step 3 - SIGN-UP`);
 
             return res.status(200).send({
                 data: {
@@ -232,17 +259,17 @@ usersRoute.post('/g', async (req, res) => {
 
 
 usersRoute.post('/c', async (req, res) => {
-/** POST: /users/c 
- * Route for signup / signin user with my custom system
- * expecting in the body : 
- *  {
- *       email ,
- *       password, 
- *       data? {
- *           ...
- *       }
- *  }
- * */
+    /** POST: /users/c 
+     * Route for signup / signin user with my custom system
+     * expecting in the body : 
+     *  {
+     *       email ,
+     *       password, 
+     *       data? {
+     *           ...
+     *       }
+     *  }
+     * */
     logger.info(`POST: /users/c`, `Enter`);
 
     // **** 1 **** - validateion of the req body
@@ -257,7 +284,7 @@ usersRoute.post('/c', async (req, res) => {
         user = User.findUserByEmail(email);
     } catch (e) {
         // there is no user with that email
-        logger.warn(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.`, {params: {error: e}});
+        logger.warn(`POST: /users/f`, `findUserByEmail failed - there is no user with that email.`, { params: { error: e } });
         console.log(e);
     }
 
@@ -298,11 +325,11 @@ usersRoute.post('/c', async (req, res) => {
         try {
             // saving the new user
             user = await new User({
-                    authData: { 
-                        email,
-                        provider,
-                        password: req.body.password
-                    }
+                authData: {
+                    email,
+                    provider,
+                    password: req.body.password
+                }
             }).save();
 
             // updating his personal data
@@ -338,28 +365,28 @@ usersRoute.post('/c', async (req, res) => {
 
 
 usersRoute.post('/data', authenticate, async (req, res) => {
-/** POST: /users/data 
- * Route for submiting user data
- * */
+    /** POST: /users/data 
+     * Route for submiting user data
+     * */
     logger.info(`POST: /users/data`, `Enter`);
 
     let data = _.pick(req.body.data, ['personalData', 'address']);
 
-    logger.info(`POST: /users/data`, ``, { params : { data }});
-    
+    logger.info(`POST: /users/data`, ``, { params: { data } });
+
     const user = req.user;
     console.log('user : ', user);
     if (validateRequestBody__POST_users_data(data)) {
         console.log('******** after validation.');
         try {
-            const updateUser = await user.setUserData(data);  
+            const updateUser = await user.setUserData(data);
             logger.info(`POST: /users/data`, `Exit`, { params: { updateUser } });
             return res.send({
                 data: {
-                    user: updateUser, 
+                    user: updateUser,
                     authValue: req.authValue,
                 }
-            });  
+            });
         } catch (error) {
             logger.error(`POST: /users/data`, `error at setUserData method.`, {
                 params: { user, error }
@@ -377,9 +404,9 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 
 
 usersRoute.get('/me', authenticate, (req, res) => {
-/** GET: /users/me 
- * Route for getting user by a token / the user object of the logged user
- * */
+    /** GET: /users/me 
+     * Route for getting user by a token / the user object of the logged user
+     * */
     logger.info(`GET: /users/me`, `Enter`);
 
     logger.info(`GET: /users/me`, `Exit`);
@@ -394,10 +421,10 @@ usersRoute.get('/me', authenticate, (req, res) => {
 
 
 usersRoute.post('/me/token', authenticate, async (req, res) => {
-/** POST: /users/me/token 
- * Route for renew token with a new one (case of transparent sigin) / removing the 
- * x-auth token (that in the header) from the token array and edding the newToken that in the body.
- * */
+    /** POST: /users/me/token 
+     * Route for renew token with a new one (case of transparent sigin) / removing the 
+     * x-auth token (that in the header) from the token array and edding the newToken that in the body.
+     * */
     logger.info(`POST: /me/token`, `Enter`);
 
     var user = req.user;
@@ -410,10 +437,10 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
     logger.info(`POST: /me/token`, `setting local vars.`, {
         params: { user }
     });
-    
+
     // validate the newToken by the x-provider and pulling the email from the validation result.
     try {
-        
+
         switch (provider) {
             case 'custom': {
                 logger.info(`POST: /me/token`, `entered case custom.`);
@@ -422,7 +449,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 authValue = "";
                 break;
             }
-            
+
             case 'google': {
                 logger.info(`POST: /me/token`, `entered case google.`);
                 const verificationResult = await User.verifyGoogleToken(newToken);
@@ -431,7 +458,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 authValue = payload['sub'];
                 break;
             }
-            
+
             case 'facebook': {
                 logger.info(`POST: /me/token`, `entered case facebook.`);
                 const verificationResult = await User.verifyFacebookToken(newToken);
@@ -440,22 +467,22 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 break;
             }
 
-            default:  break;
+            default: break;
         }
     } catch (e) {
-        logger.error(`POST: /me/token`, `token validation failed.`, { params: {error : e}});
+        logger.error(`POST: /me/token`, `token validation failed.`, { params: { error: e } });
         return res.status(401).send(e);
     }
-    
-    if(!userEmail || !authValue) {
-        logger.warn(`POST: /me/token`, `userEmail or authValue undefined.`, { 
-            params: { userEmail ,authValue }
+
+    if (!userEmail || !authValue) {
+        logger.warn(`POST: /me/token`, `userEmail or authValue undefined.`, {
+            params: { userEmail, authValue }
         });
         return res.status(401).send();
     }
 
     // the authValue check is for security purposes. 
-    if(user.email == userEmail && req.authValue == authValue) {
+    if (user.email == userEmail && req.authValue == authValue) {
         try {
             await user.removeToken(curToken);
             await user.addToken(newToken);
@@ -469,7 +496,7 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
                 }
             });
         } catch (e) {
-            logger.error(`POST: /me/token`, `token swaping failed.`, { params: {error: e} });
+            logger.error(`POST: /me/token`, `token swaping failed.`, { params: { error: e } });
             return res.status(401).send(e);
         }
 
@@ -481,9 +508,9 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
 
 
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
-/** DELETE: /users/me/token 
- * Route for deleting token / signout user
- * */
+    /** DELETE: /users/me/token 
+     * Route for deleting token / signout user
+     * */
     logger.info(`DELETE: /me/token`, `Enter`);
 
     var user = req.user;
@@ -493,7 +520,7 @@ usersRoute.delete('/me/token', authenticate, async (req, res) => {
         logger.info(`DELETE: /me/token`, `Exit`);
         return res.send();
     } catch (e) {
-        logger.error(`DELETE: /me/token`, `removeToken failed.`, { params: {error: e} });
+        logger.error(`DELETE: /me/token`, `removeToken failed.`, { params: { error: e } });
         return res.status(400).send(e);
     }
 
@@ -504,7 +531,7 @@ module.exports = {
     usersRoute
 }
 
- 
+
 /********* validators *********/
 
 /** validation 
@@ -512,7 +539,7 @@ module.exports = {
  */
 const validateRequestBody__POST_users_c = (reqBody) => {
     const signData = _.pick(reqBody, [
-        'email', 
+        'email',
         'password'
     ])
 
@@ -520,8 +547,8 @@ const validateRequestBody__POST_users_c = (reqBody) => {
         !ValidationService.isStringUndefinedOrEmpty(signData.email) &&
         ValidationService.isString(signData.password) &&
         !ValidationService.isStringUndefinedOrEmpty(signData.password)) {
-            return true;
-    } 
+        return true;
+    }
 }
 
 /** validation 
@@ -531,34 +558,34 @@ const validateRequestBody__POST_users_c = (reqBody) => {
  */
 const validateRequestBody__POST_users_data = (data) => {
     const personalData = _.pick(data.personalData, [
-        'lastName', 
-        'firstName', 
-        'birthDate', 
+        'lastName',
+        'firstName',
+        'birthDate',
         'gender'
     ]);
     const addressData = _.pick(data.address, [
-        'country', 
-        'city', 
-        'address', 
+        'country',
+        'city',
+        'address',
         'postcode'
     ]);
-console.log(personalData, addressData);
+    console.log(personalData, addressData);
 
-console.log('HERE 000001');
-    if(!ValidationService.isObjectEmpty(personalData)) {
-console.log('HERE 000002');
+    console.log('HERE 000001');
+    if (!ValidationService.isObjectEmpty(personalData)) {
+        console.log('HERE 000002');
         if (ValidationService.isStringTrimAlpaWordsSeries(personalData.lastName) &&
             ValidationService.isStringTrimAlpaWordsSeries(personalData.firstName) &&
-            ValidationService.isString(personalData.gender) && 
+            ValidationService.isString(personalData.gender) &&
             ['male', 'female'].includes(personalData.gender) &&
-            !ValidationService.isObjectEmpty(personalData.birthDate) && 
+            !ValidationService.isObjectEmpty(personalData.birthDate) &&
             !ValidationService.validateBirthDateObject(personalData.birthDate)) {
-                return true;
+            return true;
         }
-    } else if(!ValidationService.isObjectEmpty(addressData)) {
-console.log('HERE 000003');
+    } else if (!ValidationService.isObjectEmpty(addressData)) {
+        console.log('HERE 000003');
         if (ValidationService.isStringTrimAlpaWordsSeries(addressData.country) &&
-            ValidationService.isStringTrimAlpaWordsSeries(addressData.city) && 
+            ValidationService.isStringTrimAlpaWordsSeries(addressData.city) &&
             ValidationService.isStringTrimAlpaWordsSeries(addressData.address) &&
             ValidationService.isParseILPostcode(addressData.postcode)) {
             return true;

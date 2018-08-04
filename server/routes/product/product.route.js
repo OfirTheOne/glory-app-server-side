@@ -14,11 +14,13 @@ const { Product } = require('../../models/product/product.model');
 // set logger service object
 const logger = new Logger(LogStream.CONSOLE);
 
-/**
- * Route for adding a product
- */
-// POST: /products/
+// ***** routes for db maganment ***** // add admin authentication
+
 productsRoute.post('/', async (req, res) => {
+    /**
+    * Route for adding a product
+    */
+    // POST: /products/
     logger.info(`POST: /products`, `Enter`);
 
     const productbody = _.pick(req.body, ['pCode', 'price', 'category', 'description', 'measurement', 'imagePath']);
@@ -34,11 +36,11 @@ productsRoute.post('/', async (req, res) => {
     }
 });
 
-/**
- * Route for deleting a product by id
- */
-// DELETE: /products/:pid
 productsRoute.delete('/:pid', async (req, res) => {
+    /**
+     * Route for deleting a product by id
+     */
+    // DELETE: /products/:pid
     logger.info(`DELETE: /products/:pid`, `Enter`);
 
     const { pid } = req.params;
@@ -57,6 +59,34 @@ productsRoute.delete('/:pid', async (req, res) => {
     }
 
 });
+
+productsRoute.get('/', async (req, res) => {
+    /**
+     * Route getting all products sorted by creation date.   
+     */
+    // GET: /products/
+    logger.info(`GET: /products/`, `Enter`);
+
+    // exec the query & handle res    
+    try {
+        // fetching the doc
+        const products = await Product.find({}).sort({ _id : -1 } );
+
+        // if doc not exists send 400
+        if (!products) {
+            logger.warn(`GET: /products`, `doc not exists`);
+            return res.status(404).send('doc not exists');
+        }
+        // success - send the doc
+        logger.info(`GET: /products`, `Exit`, {params: {products}});
+        return res.send({data: products});
+    } catch (e) {
+        // error fetching the doc - send 400
+        logger.error(`GET: /products`, `error fetching the doc`, {params: {error: e}});
+        return res.status(400).send('error fetching the doc');
+    }
+});
+
 
 /**
  * Route for getting a product by id
@@ -184,33 +214,6 @@ productsRoute.get('/filter/:q', async (req, res) => {
     }
 });
 
-
-/**
- * Route getting all products sorted by creation date.   
- */
-// GET: /products/
-productsRoute.get('/', async (req, res) => {
-    logger.info(`GET: /products/`, `Enter`);
-
-    // exec the query & handle res    
-    try {
-        // fetching the doc
-        const products = await Product.find({}).sort({ _id : -1 } );
-
-        // if doc not exists send 400
-        if (!products) {
-            logger.warn(`GET: /products`, `doc not exists`);
-            return res.status(404).send('doc not exists');
-        }
-        // success - send the doc
-        logger.info(`GET: /products`, `Exit`, {params: {products}});
-        return res.send({data: products});
-    } catch (e) {
-        // error fetching the doc - send 400
-        logger.error(`GET: /products`, `error fetching the doc`, {params: {error: e}});
-        return res.status(400).send('error fetching the doc');
-    }
-});
 
 
 // validate GET: /products/filter/:q request
