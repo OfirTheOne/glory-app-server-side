@@ -31,21 +31,27 @@ usersRoute.get('/', async (req, res) => {
      * */
     logger.info(`GET: /users`, `Enter`);
 
-    const users = await User.find({})
-            .project({ 
-                'authData.provider': 1,
-                'authData.email': 1,
-                address: 1,
-                personalData: 1,
-                cartId: 1,
-                wishList: 1 
-            });
-    logger.info(`GET: /users`, `Exit`);
-    return res.send({
-        data: {
-            users,
-        }
-    });
+    try {
+        const users = await User.find({})
+                .project({ 
+                    'authData.provider': 1,
+                    'authData.email': 1,
+                    address: 1,
+                    personalData: 1,
+                    cartId: 1,
+                    wishList: 1 
+                });
+        logger.info(`GET: /users`, `Exit`);
+        return res.send({
+            data: {
+                users,
+            }
+        });
+
+    } catch(error) {
+        logger.error(`GET: /users`, `fail fetching all users.`, { params: { error } });
+        return res.status(404).send(error);
+    }
 });
 
 
