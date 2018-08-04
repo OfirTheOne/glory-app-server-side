@@ -42,11 +42,7 @@ usersRoute.get('/', async (req, res) => {
                     wishList: 1 
                 });
         logger.info(`GET: /users`, `Exit`);
-        return res.send({
-            data: {
-                users,
-            }
-        });
+        return res.send({data: users});
 
     } catch(error) {
         logger.error(`GET: /users`, `fail fetching all users.`, { params: { error } });
