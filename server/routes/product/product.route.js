@@ -23,7 +23,7 @@ productsRoute.post('/', async (req, res) => {
     // POST: /products/
     logger.info(`POST: /products`, `Enter`);
 
-    const productbody = _.pick(req.body.product, [
+    const productBody = _.pick(req.body.product, [
         'pCode', 
         'price', 
         'category', 
@@ -34,8 +34,8 @@ productsRoute.post('/', async (req, res) => {
         'onSale',
         'newIn',
     ]);
-    // TODO: validate productbody
-    let product = new Product(productbody);
+    // TODO: validate productBody
+    let product = new Product(productBody);
     console.log(product);
     try {
         const productDoc = await product.save();
