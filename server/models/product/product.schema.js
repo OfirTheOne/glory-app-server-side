@@ -43,7 +43,7 @@ const ProductSchema = new mongoose.Schema({
         required: false,
     },
     imagePath: {
-        type: String,
+        type: [String],
         required: false,
     }
 });

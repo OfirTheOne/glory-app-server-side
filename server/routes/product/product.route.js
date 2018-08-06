@@ -23,7 +23,17 @@ productsRoute.post('/', async (req, res) => {
     // POST: /products/
     logger.info(`POST: /products`, `Enter`);
 
-    const productbody = _.pick(req.body, ['pCode', 'price', 'category', 'description', 'measurement', 'imagePath']);
+    const productbody = _.pick(req.body.product, [
+        'pCode', 
+        'price', 
+        'category', 
+        'description', 
+        'season',
+        'measurement', 
+        'imagePath',
+        'onSale',
+        'newIn',
+    ]);
     // TODO: validate productbody
     let product = new Product(productbody);
     console.log(product);
