@@ -46,6 +46,41 @@ productsRoute.post('/', async (req, res) => {
     }
 });
 
+productsRoute.patch('/:pcode', async (req, res) => {
+    /**
+    * Route for updating a product by pCode
+    */
+    // POST: /products/
+    logger.info(`PATCH: /products/:pcode`, `Enter`);
+
+    const { pcode } = req.params;
+
+    const productAllowedProperties = _.pick(req.body.product, [
+        // 'pCode', 
+        'price', 
+        'category', 
+        'description', 
+        'season',
+        'measurement', 
+        'imagePath',
+        'onSale',
+        'newIn',
+    ]);
+    const productUpdatedProperties = _.pickBy(productAllowedProperties, _.identity)
+    console.log(productUpdatedProperties);
+    // TODO: validate productBody
+    try {
+        const updatedProduct = await Product.findOneAndUpdate(
+            {pCode: pcode}, productUpdatedProperties, {new: true});
+        const productDoc = await updatedProduct.save();
+        logger.info(`PATCH: /products/:pcode`, `Exit`,  { params: { productDoc } });
+        return res.send({data: productDoc});
+    } catch (e) {
+        return res.status(400).send(e);
+    }
+});
+
+
 productsRoute.delete('/:pid', async (req, res) => {
     /**
      * Route for deleting a product by id
