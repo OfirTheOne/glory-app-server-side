@@ -45,6 +45,8 @@ const ProductSchema = new mongoose.Schema({
     imagePath: {
         type: [String],
         required: false,
+        minlength: 1,
+        maxlength: 4
     }
 });
 

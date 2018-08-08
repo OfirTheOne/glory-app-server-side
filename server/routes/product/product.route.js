@@ -50,7 +50,7 @@ productsRoute.patch('/:pcode', async (req, res) => {
     /**
     * Route for updating a product by pCode
     */
-    // POST: /products/
+    // PATCH: /products/:pcode
     logger.info(`PATCH: /products/:pcode`, `Enter`);
 
     const { pcode } = req.params;
@@ -83,7 +83,6 @@ productsRoute.patch('/:pcode', async (req, res) => {
         return res.status(400).send(e);
     }
 });
-
 
 productsRoute.delete('/:pid', async (req, res) => {
     /**
