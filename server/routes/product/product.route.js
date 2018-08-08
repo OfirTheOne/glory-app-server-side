@@ -72,6 +72,10 @@ productsRoute.patch('/:pcode', async (req, res) => {
     try {
         const updatedProduct = await Product.findOneAndUpdate(
             {pCode: pcode}, productUpdatedProperties, {new: true});
+        if (!updatedProduct) {
+            console.log(`product with product-code ${pcode} do not exists.`);
+            return res.status(400).send(`product with product-code ${pcode} do not exists.`);
+        }
         const productDoc = await updatedProduct.save();
         logger.info(`PATCH: /products/:pcode`, `Exit`,  { params: { productDoc } });
         return res.send({data: productDoc});
