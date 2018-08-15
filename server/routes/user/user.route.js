@@ -16,10 +16,10 @@ const { authenticate } = require('../../middleware/authenticate');
 // sub-routes
 const { cartRoute } = require('./cart/cart.route'); // sub-route '/cart' of '/users' 
 const { wishRoute } = require('./wish/wish.route'); // sub-route '/wish' of '/users' 
-const { orderRoute } = require('./order/order.route'); // sub-route '/order' of '/users' 
+// const { orderRoute } = require('./order/order.route'); // sub-route '/order' of '/users' 
 usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' route
 usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
-usersRoute.use('/order', orderRoute); // connecting the '/order' route to '/user' route
+// usersRoute.use('/order', orderRoute); // connecting the '/order' route to '/user' route
 
 
 // StripeJs

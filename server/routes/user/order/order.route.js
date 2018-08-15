@@ -54,3 +54,7 @@ orderRoute.post('/',authenticate, async (req, res) => {
 
     */
 });
+
+module.exports = {
+    orderRoute
+}
