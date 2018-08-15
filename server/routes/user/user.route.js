@@ -448,7 +448,7 @@ usersRoute.post('/source', authenticate, async (req, res) => {
     // var stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
     const user = req.user;
     const { source } = req.body;
-
+console.log('source: ', source);
     const customerId = user.paymentMethods ? user.paymentMethods.customerId : undefined;
 
     if (!customerId) { // error customerId not defined
@@ -467,7 +467,7 @@ usersRoute.post('/source', authenticate, async (req, res) => {
                 customerId, 
                 { source: source.id }
             );
-            console.log(result);
+            console.log('customer : ', result);
         } catch (error) {
             console.log(error);
             return res.status(401).send(error);
@@ -479,7 +479,7 @@ usersRoute.post('/source', authenticate, async (req, res) => {
                 sourceId: source.id, 
                 // exp_year: source.card.exp_year, 
                 brand: source.card.brand,
-                last4: source.last4,
+                last4: sourcecard.card.last4,
                 metadata: source.metadata
             }
             user.paymentMethods.sources.push(storeableSourceData);
