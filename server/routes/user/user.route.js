@@ -479,7 +479,7 @@ console.log('source: ', source);
                 sourceId: source.id, 
                 // exp_year: source.card.exp_year, 
                 brand: source.card.brand,
-                last4: sourcecard.card.last4,
+                last4: source.card.last4,
                 metadata: source.metadata
             }
             user.paymentMethods.sources.push(storeableSourceData);
