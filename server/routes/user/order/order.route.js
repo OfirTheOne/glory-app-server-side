@@ -15,6 +15,7 @@ const logger = new Logger(LogStream.CONSOLE);
 
 
 orderRoute.post('/',authenticate, async (req, res) => {
+    /*
     const { orderProducts, deliveryAddress, deliveryOption ,source, paymentMethod } = req.body;
 
     // TODO : validate orderProducts, address, deliveryOption
@@ -51,5 +52,5 @@ orderRoute.post('/',authenticate, async (req, res) => {
         return res.status(401).send(error);
     }
 
-    
+    */
 });
