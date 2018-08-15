@@ -16,8 +16,15 @@ const { authenticate } = require('../../middleware/authenticate');
 // sub-routes
 const { cartRoute } = require('./cart/cart.route'); // sub-route '/cart' of '/users' 
 const { wishRoute } = require('./wish/wish.route'); // sub-route '/wish' of '/users' 
+const { orderRoute } = require('./order/order.route'); // sub-route '/order' of '/users' 
 usersRoute.use('/cart', cartRoute); // connecting the '/cart' route to '/user' route
 usersRoute.use('/wish', wishRoute); // connecting the '/wish' route to '/user' route
+usersRoute.use('/order', orderRoute); // connecting the '/order' route to '/user' route
+
+
+// StripeJs
+const stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
+
 
 // set logger service object
 const logger = new Logger(LogStream.CONSOLE);
@@ -33,18 +40,18 @@ usersRoute.get('/', async (req, res) => {
 
     try {
         const users = await User.find({})
-                .select({ 
-                    'authData.provider': 1,
-                    'authData.email': 1,
-                    address: 1,
-                    personalData: 1,
-                    cartId: 1,
-                    wishList: 1 
-                });
+            .select({
+                'authData.provider': 1,
+                'authData.email': 1,
+                address: 1,
+                personalData: 1,
+                cartId: 1,
+                wishList: 1
+            });
         logger.info(`GET: /users`, `Exit`);
-        return res.send({data: users});
+        return res.send({ data: users });
 
-    } catch(error) {
+    } catch (error) {
         logger.error(`GET: /users`, `fail fetching all users.`, { params: { error } });
         return res.status(404).send(error);
     }
@@ -120,13 +127,23 @@ usersRoute.post('/f', async (req, res) => {
     else {
         // if the user dont exists in the db 
         console.log(`start step 3 - SIGN-UP`);
+        let customerId;
+        try {
+            const customer = await createCustomer(email);
+            console.log(customer);
+            customerId = customer.id;
+        } catch (error) {
+            console.log(error);
+        }
+
         try {
             user = await (new User({
                 authData: { email, provider },
                 personalData: {
                     lastName: authTokenResult['last_name'],
                     firstName: authTokenResult['name']
-                }
+                },
+                paymentMethods: { customerId }
             })).save();
             console.log(`create and store new user : ` + JSON.stringify(user, undefined, 2));
             const ownerId = user._id;
@@ -224,13 +241,24 @@ usersRoute.post('/g', async (req, res) => {
 
         // if the user dont exists in the db 
         console.log(`start step 3 - SIGN-UP`);
+
+        let customerId;
+        try {
+            const customer = await createCustomer(email);
+            console.log(customer);
+            customerId = customer.id;
+        } catch (error) {
+            console.log(error);
+        }
+
         try {
             user = new User({
                 authData: { email, provider },
                 personalData: {
                     lastName: payload['family_name'],
                     firstName: payload['given_name']
-                }
+                },
+                paymentMethods: { customerId }
             });
             await user.save();
 
@@ -324,6 +352,16 @@ usersRoute.post('/c', async (req, res) => {
     }
     else {  //   -   SIGN-UP   -
         // if the user dont exists in the db 
+        
+        let customerId;
+        try {
+            const customer = await createCustomer(email);
+            console.log(customer);
+            customerId = customer.id;
+        } catch (error) {
+            console.log(error);
+        }
+
         try {
             // saving the new user
             user = await new User({
@@ -331,7 +369,8 @@ usersRoute.post('/c', async (req, res) => {
                     email,
                     provider,
                     password: req.body.password
-                }
+                },
+                paymentMethods: { customerId }
             }).save();
 
             // updating his personal data
@@ -404,6 +443,59 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 
 });
 
+
+usersRoute.post('/source', authenticate, async (req, res) => {
+    // var stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
+    const user = req.user;
+    const { source } = req.body;
+
+    const customerId = user.paymentMethods ? user.paymentMethods.customerId : undefined;
+
+    if (!customerId) { // error customerId not defined
+        console.log('customerId not defined');  
+        return res.status(401).send('customerId not defined');
+    
+    } else if (!source) {
+        console.log('source not defined');  
+        return res.status(401).send('source not defined');
+
+    } else { // existing customer and source defined
+        
+        // update the stripe-customer with the new source
+        try {
+            const result = await stripe.customers.update(
+                customerId, 
+                { source: source.id }
+            );
+            console.log(result);
+        } catch (error) {
+            console.log(error);
+            return res.status(401).send(error);
+        }
+
+        // store in the db the needed parameters from the source
+        try {
+            const storeableSourceData = {
+                sourceId: source.id, 
+                // exp_year: source.card.exp_year, 
+                brand: source.card.brand,
+                last4: source.last4,
+                metadata: source.metadata
+            }
+            user.paymentMethods.sources.push(storeableSourceData);
+            await user.save();
+            return res.send({data: {
+                user,
+                authValue: req.authValue,
+            }});
+        } catch (error) {
+            console.log(error);
+            return res.status(401).send(error);
+        }
+    }
+
+
+});
 
 usersRoute.get('/me', authenticate, (req, res) => {
     /** GET: /users/me 
@@ -534,6 +626,19 @@ module.exports = {
 }
 
 
+const createCustomer = async (email) => {
+
+    try {
+        const customer = await stripe.customers.create({
+            email,
+        });
+        return customer;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 /********* validators *********/
 
 /** validation 
@@ -602,3 +707,4 @@ const isUserDataDefined = (user) => {
     let isDefine = (user.personalData != undefined) && (user.personalData.firstName != undefined);
     return isDefine;
 }
+

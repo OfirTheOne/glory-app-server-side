@@ -121,6 +121,19 @@ const UserSchema = new mongoose.Schema({
             default: []
         },
     },
+    paymentMethods: {
+        customerId: String, // stripeJS customer object
+        sources: {
+            type: [{ 
+                sourceId: String,
+                brand: String,
+                // exp_year: Number, 
+                last4: String,
+                metadata: Object
+            }],
+            default: [] 
+        }
+    },
     cartId: {
         type: mongoose.Schema.Types.ObjectId
     },

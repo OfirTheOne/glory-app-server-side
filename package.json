@@ -23,6 +23,7 @@
     "lodash": "^4.17.5",
     "mongodb": "^3.0.3",
     "mongoose": "^5.0.7",
+    "stripe": "^6.7.0",
     "validator": "^9.4.1"
   },
   "devDependencies": {

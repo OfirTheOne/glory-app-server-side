@@ -26,8 +26,13 @@ UserSchema.methods.toJSON = function () {
     const user = this;
     const userObject = user.toObject();
 
+    const sources = userObject.paymentMethods.sources
+        .map( (source) => _.pick(source, ['brand', 'last4']) );
+
     const authData = _.pick(userObject.authData, ['email', 'provider'])
+    
     const returnedUserObject = _.pick(userObject, ['_id', 'personalData', 'address', 'wishList']);
+    returnedUserObject.paymentMethods =  { sources };
     returnedUserObject.authData = authData;
     return returnedUserObject;
 }
