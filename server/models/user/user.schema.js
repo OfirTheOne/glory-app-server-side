@@ -129,7 +129,8 @@ const UserSchema = new mongoose.Schema({
                 brand: String,
                 // exp_year: Number, 
                 last4: String,
-                metadata: Object
+                metadata: Object,
+                isDefault: Boolean
             }],
             default: [] 
         }

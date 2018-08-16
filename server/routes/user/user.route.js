@@ -169,7 +169,6 @@ usersRoute.post('/f', async (req, res) => {
     }
 });
 
-
 usersRoute.post('/g', async (req, res) => {
     /** POST: /users/g 
      * Route for signup / signin user with google
@@ -287,7 +286,6 @@ usersRoute.post('/g', async (req, res) => {
     }
 });
 
-
 usersRoute.post('/c', async (req, res) => {
     /** POST: /users/c 
      * Route for signup / signin user with my custom system
@@ -352,7 +350,7 @@ usersRoute.post('/c', async (req, res) => {
     }
     else {  //   -   SIGN-UP   -
         // if the user dont exists in the db 
-        
+
         let customerId;
         try {
             const customer = await createCustomer(email);
@@ -405,6 +403,7 @@ usersRoute.post('/c', async (req, res) => {
 });
 
 
+
 usersRoute.post('/data', authenticate, async (req, res) => {
     /** POST: /users/data 
      * Route for submiting user data
@@ -443,59 +442,139 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 
 });
 
-
 usersRoute.post('/source', authenticate, async (req, res) => {
-    // var stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
     const user = req.user;
     const { source } = req.body;
-console.log('source: ', source);
+    console.log('source: ', source);
     const customerId = user.paymentMethods ? user.paymentMethods.customerId : undefined;
 
+    /******* - VALIDATE PARAMETERS STEP - *******/
     if (!customerId) { // error customerId not defined
-        console.log('customerId not defined');  
+        console.log('customerId not defined');
         return res.status(401).send('customerId not defined');
-    
+
     } else if (!source) {
-        console.log('source not defined');  
+        console.log('source not defined');
         return res.status(401).send('source not defined');
 
-    } else { // existing customer and source defined
-        
-        // update the stripe-customer with the new source
-        try {
-            const result = await stripe.customers.update(
-                customerId, 
-                { source: source.id }
-            );
-            console.log('customer : ', result);
-        } catch (error) {
-            console.log(error);
-            return res.status(401).send(error);
-        }
+    }
+    
+    /******* - TAKE ACTIONS STEP - *******/
+    // update the stripe-customer with the new source
+    try {
+        /** https://stripe.com/docs/api#update_customer-source
+        *  from the doc, the new source is the new default
+        */
+        const result = await stripe.customers.update(
+            customerId,
+            { source: source.id }
+        );
+        console.log('customer : ', result);
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
+    }
 
-        // store in the db the needed parameters from the source
-        try {
-            const storeableSourceData = {
-                sourceId: source.id, 
-                // exp_year: source.card.exp_year, 
-                brand: source.card.brand,
-                last4: source.card.last4,
-                metadata: source.metadata
-            }
-            user.paymentMethods.sources.push(storeableSourceData);
-            await user.save();
-            return res.send({data: {
+    // store in the db the needed parameters from the source
+    try {
+        const storeableSourceData = {
+            sourceId: source.id,
+            // exp_year: source.card.exp_year, 
+            brand: source.card.brand,
+            last4: source.card.last4,
+            isDefault: true,
+            metadata: source.metadata
+        }
+        user.paymentMethods.sources.push(storeableSourceData);
+        await user.save();
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
+    }
+
+    /******* - RETURN RESULTE STEP - *******/
+    try {
+        return res.send({
+            data: {
                 user,
                 authValue: req.authValue,
-            }});
-        } catch (error) {
-            console.log(error);
-            return res.status(401).send(error);
-        }
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
     }
 
 
 });
+
+usersRoute.delete('/source', authenticate, async (req, res) => {
+    const user = req.user;
+    const { sourceId } = req.body;
+    console.log('sourceId: ', sourceId);
+    const customerId = user.paymentMethods ? user.paymentMethods.customerId : undefined;
+
+    /******* - VALIDATE PARAMETERS STEP - *******/
+    if (!customerId) { // error customerId not defined
+        console.log('customerId not defined');
+        return res.status(401).send('customerId not defined');
+
+    } else if (!sourceId) { // error sourceId not defined
+        console.log('sourceId not defined');
+        return res.status(401).send('sourceId not defined');
+
+    }
+
+    /******* - TAKE ACTION STEP - *******/
+    let defaultSourceId;
+    try {
+        // delete the target source from stripe-customer.
+        const customer = await stripe.customers.deleteSource(
+            customerId,
+            sourceId
+        );
+        console.log('customer : ', customer);
+        defaultSourceId = customer.default_source
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
+    }
+
+    try {
+        // remove the target source from the sources array and 
+        // set the isDefaulte property of the new defaulte source. 
+        user.paymentMethods.sources =
+            user.paymentMethods.sources
+                .filter((source) => source.id == sourceId)
+                .map((source) => {
+                    if (source.id == defaultSourceId) {
+                        source.isDefault = true;
+                    }
+                    return source;
+                })
+
+        await user.save();
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
+    }
+
+    /******* - RETURN RESULTE STEP - *******/
+    try {
+        return res.send({
+            data: {
+                user,
+                authValue: req.authValue,
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(401).send(error);
+    }
+
+});
+
+
 
 usersRoute.get('/me', authenticate, (req, res) => {
     /** GET: /users/me 
@@ -512,7 +591,6 @@ usersRoute.get('/me', authenticate, (req, res) => {
         }
     });
 });
-
 
 usersRoute.post('/me/token', authenticate, async (req, res) => {
     /** POST: /users/me/token 
@@ -599,7 +677,6 @@ usersRoute.post('/me/token', authenticate, async (req, res) => {
         return res.status(401).send();
     }
 })
-
 
 usersRoute.delete('/me/token', authenticate, async (req, res) => {
     /** DELETE: /users/me/token 
