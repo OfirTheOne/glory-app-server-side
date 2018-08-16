@@ -443,6 +443,8 @@ usersRoute.post('/data', authenticate, async (req, res) => {
 });
 
 usersRoute.post('/source', authenticate, async (req, res) => {
+
+    /******* - EXTRACT PARAMETERS STEP - *******/
     const user = req.user;
     const { source } = req.body;
     console.log('source: ', source);

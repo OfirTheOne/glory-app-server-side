@@ -78,7 +78,7 @@ const UserSchema = new mongoose.Schema({
             minlength: 1,
             unique: true,
             sparse: true,
-            partialFilterExpression: {email: {$exists: true}},
+            partialFilterExpression: { email: { $exists: true } },
             validate: {
                 validator: validator.isEmail,
                 message: `{VALUE} is not a vaild email.`
@@ -100,23 +100,23 @@ const UserSchema = new mongoose.Schema({
         },
         tokens: {
             type: [{
-                    access: {
-                        type: String,
-                        // required: true,
-                    },
-                    expDate: {
-                        type: Number,
-                        // required: true,
-                    },
-                    token: {
-                        type: String,
-                        // required: true,
-                    },
-                    deviceIp: {
-                        type: String,
-                        // required: true,
-                        validate: validator.isIP
-                    }
+                access: {
+                    type: String,
+                    // required: true,
+                },
+                expDate: {
+                    type: Number,
+                    // required: true,
+                },
+                token: {
+                    type: String,
+                    // required: true,
+                },
+                deviceIp: {
+                    type: String,
+                    // required: true,
+                    validate: validator.isIP
+                }
             }],
             default: []
         },
@@ -124,7 +124,7 @@ const UserSchema = new mongoose.Schema({
     paymentMethods: {
         customerId: String, // stripeJS customer object
         sources: {
-            type: [{ 
+            type: [{
                 sourceId: String,
                 brand: String,
                 // exp_year: Number, 
@@ -132,7 +132,7 @@ const UserSchema = new mongoose.Schema({
                 metadata: Object,
                 isDefault: Boolean
             }],
-            default: [] 
+            default: []
         }
     },
     cartId: {
@@ -141,7 +141,15 @@ const UserSchema = new mongoose.Schema({
     wishList: {
         type: [mongoose.Schema.Types.ObjectId]
     },
-
+    orders: {
+        type: [
+            {
+                orderId: mongoose.Schema.Types.ObjectId,
+                total: Number
+            }
+        ],
+        default: []
+    }
 
 });
 

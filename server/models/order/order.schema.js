@@ -53,10 +53,6 @@ const OrderSchema = new mongoose.Schema({
     total: {
         type: Number
     },
-    paid: {
-        type: Boolean,
-        default: false
-    },
     deliveryAddressDetails: {
         deliveryAddress: {
             type: Object,
@@ -68,14 +64,16 @@ const OrderSchema = new mongoose.Schema({
             type: Number
         }
     },
-    
-    // the only field that will be filled not in the doc creation.  
+    paid: {
+        type: Boolean,
+        default: false
+    },
     paymentDetails: {
         paymentMethod: {
             type: String
         },
-        source: {
-            type: Object
+        sourceId: {
+            type: String
         }, 
         charge: {
             type: Object

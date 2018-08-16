@@ -4,10 +4,7 @@ const { Product } = require('../product/product.model');
 // const { ObjectID } = require('mongodb');
 
 
-
-const Order = mongoose.model('Order', OrderSchema);
-
-Order.static.calcOrderTotal = async function (orderProducts, deliveryFeed) {
+OrderSchema.static.calcOrderTotal = async function (orderProducts, deliveryFeed) {
     const Order = this;
     let totalProducts = 0;
     try {   
@@ -24,6 +21,7 @@ Order.static.calcOrderTotal = async function (orderProducts, deliveryFeed) {
         throw error;
     }
 }
+const Order = mongoose.model('Order', OrderSchema);
 
 
 module.exports = {
