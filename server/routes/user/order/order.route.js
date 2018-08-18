@@ -33,10 +33,6 @@ orderRoute.post('/', authenticate, async (req, res) => {
         deliveryFeed
     }
 
-    const paymentDetails = {
-        source,
-        paymentMethod
-    }
 
     /**
      * validate that the calculation of total charge on the server same as 
