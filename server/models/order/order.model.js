@@ -14,7 +14,7 @@ OrderSchema.statics.calcOrderTotal = async function (orderProducts, deliveryFeed
             totalProducts += price * product.amount;
         }
         console.log(totalProducts);
-        const total = orderProducts + deliveryFeed;
+        const total = totalProducts + deliveryFeed;
         return total;
     } catch (error) {
         console.log(error);
