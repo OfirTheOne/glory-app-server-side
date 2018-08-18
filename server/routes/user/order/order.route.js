@@ -26,13 +26,13 @@ orderRoute.post('/', authenticate, async (req, res) => {
 
     // TODO : validate orderProducts, address, deliveryOption
     // TODO : validate that all product are in stock
-    const deliveryFeed = deliveryOption == 'standard' ? 5 : 10;
+    const deliveryFeed = (deliveryOption == 'standard')? 5 : 10;
     const deliveryAddressDetails = {
         deliveryAddress,
         deliveryOption,
         deliveryFeed
     }
-
+    console.log(JSON.stringify(deliveryAddressDetails, undefined, 2));
 
     /**
      * validate that the calculation of total charge on the server same as 
