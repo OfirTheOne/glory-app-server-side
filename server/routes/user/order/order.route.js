@@ -9,6 +9,8 @@ const { authenticate } = require('../../../middleware/authenticate');
 // mongoose models
 const { Order } = require('../../../models/order/order.model');
 
+// StripeJs
+const stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
 
 // set logger service object
 const logger = new Logger(LogStream.CONSOLE);
