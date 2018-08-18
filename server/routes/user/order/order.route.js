@@ -20,8 +20,6 @@ orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
     const { user } = req;
-    console.log('*****user****: ', JSON.stringify(user, undefined, 2));
-    console.log('*****paymentMethods****: ', JSON.stringify(user.paymentMethods, undefined, 2));    
     const {
         orderProducts, deliveryAddress, deliveryOption,
         sourceId, metadata
@@ -59,7 +57,7 @@ orderRoute.post('/', authenticate, async (req, res) => {
         console.log(error);
         return res.status(401).send(error);
     }
-
+    console.log('customer: ', JSON.stringify(customer, undefined, 2));
     let sourceForCharge;
     if (!sourceId) {
         sourceForCharge = customer.default_source;
