@@ -4,7 +4,7 @@ const { Product } = require('../product/product.model');
 // const { ObjectID } = require('mongodb');
 
 
-OrderSchema.static.calcOrderTotal = async function (orderProducts, deliveryFeed) {
+OrderSchema.statics.calcOrderTotal = async function (orderProducts, deliveryFeed) {
     const Order = this;
     let totalProducts = 0;
     try {   
