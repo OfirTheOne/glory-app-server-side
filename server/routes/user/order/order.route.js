@@ -17,7 +17,7 @@ const logger = new Logger(LogStream.CONSOLE);
 orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
-    const { user } = req.body;
+    const { user } = req;
     console.log('*****user****: ', JSON.stringify(user, undefined, 2));
     console.log('*****paymentMethods****: ', JSON.stringify(user.paymentMethods, undefined, 2));    
     const {
