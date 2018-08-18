@@ -17,11 +17,13 @@ const logger = new Logger(LogStream.CONSOLE);
 orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
+    const { user } = req.body;
+    console.log(JSON.stringify(user, undefined, 2));
     const {
         orderProducts, deliveryAddress, deliveryOption,
         sourceId, paymentMethod, metadata
     } = req.body;
-    const { user } = req.body;
+
 
 
     // TODO : validate orderProducts, address, deliveryOption
