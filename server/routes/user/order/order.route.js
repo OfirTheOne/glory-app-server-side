@@ -79,6 +79,7 @@ orderRoute.post('/', authenticate, async (req, res) => {
             amount: totalCharge,
             currency: "usd",
             source: sourceForCharge,
+            customer: customer.id,
             description: `Charge for ${user.authData.email}.`
         });
     } catch (error) {
