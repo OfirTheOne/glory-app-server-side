@@ -48,7 +48,7 @@ orderRoute.post('/', authenticate, async (req, res) => {
     // retrive the stripe-customer object corresponds to the user
     let customer;
     try {
-        const customerId = user.paymentMethod.customerId;
+        const customerId = user.paymentMethods.customerId;
         customer = await stripe.customers.retrieve(customerId);
     } catch (error) {
         console.log(error);
