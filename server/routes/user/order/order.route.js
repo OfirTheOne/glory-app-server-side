@@ -62,7 +62,10 @@ orderRoute.post('/', authenticate, async (req, res) => {
     if (!sourceId) {
         sourceForCharge = customer.default_source;
     } else {
-        sourceForCharge = customer.sources.data.includes(sourceId) ? sourceId : undefined;
+        sourceForCharge = 
+            customer.sources.data.some(source => source.id == sourceId) ? 
+                sourceId : 
+                undefined;
     }
     console.log('sourceForCharge: ', sourceForCharge);
 
