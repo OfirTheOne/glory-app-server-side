@@ -18,10 +18,10 @@ orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
     const { user } = req.body;
-    console.log(JSON.stringify(user, undefined, 2));
+    console.log('user: ', JSON.stringify(user, undefined, 2));
     const {
         orderProducts, deliveryAddress, deliveryOption,
-        sourceId, paymentMethod, metadata
+        sourceId, metadata
     } = req.body;
 
 
@@ -33,8 +33,8 @@ orderRoute.post('/', authenticate, async (req, res) => {
         deliveryAddress,
         deliveryOption,
         deliveryFeed
-    }
-    console.log(JSON.stringify(deliveryAddressDetails, undefined, 2));
+    };
+    console.log('deliveryAddressDetails: ', JSON.stringify(deliveryAddressDetails, undefined, 2));
 
     /**
      * validate that the calculation of total charge on the server same as 
