@@ -7,7 +7,9 @@ const { Logger, LogStream } = require('../../../utils/logger-service/logger.serv
 const { authenticate } = require('../../../middleware/authenticate');
 
 // mongoose models
-const { Order } = require('../../../models/order/order.model');
+const { Order, Cart } = require('../../../models/index');
+
+const { ValidationService } = require('../../../utils/custom-validation-service/validation.service')
 
 // StripeJs
 const stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
@@ -15,34 +17,68 @@ const stripe = require("stripe")("sk_test_a0WbK4VPDDW0OLPc8FJROwjd");
 // set logger service object
 const logger = new Logger(LogStream.CONSOLE);
 
+const DEFAULT_CURRENCY = "usd";
+
+
+/**** db-managment routes *****/
+
+orderRoute.get('/', async (req, res) => {
+    try {
+        const orders = await Order.find({});
+        logger.info(`GET: /orders`, `Exit`);
+        return res.send({ data: orders });
+
+    } catch (error) {
+        console.log(error);
+        logger.error(`GET: /orders`, `Exit - Failed to get all orders`, { params: { error } });
+        return res.status(401).send( `Failed to get all orders`);
+
+    }
+});
+
+orderRoute.get('/:uid', async (req, res) => {
+    logger.info(`GET: /orders`, `Enter`);
+
+    try {
+        const userId = req.params.id;
+        if (!ObjectId.isValid(userId)) {
+            return res.status(401).send( `user id not valid.`);
+        }
+
+        const userOrders = await Order.find({ 'user.userId': userId });
+        logger.info(`GET: /orders/:uid`, `Exit`);
+        return res.send({ data: userOrders });
+
+    } catch (error) {
+        console.log(error);
+        logger.error(`GET: /orders/:uid`, `Exit - Failed to get all orders`, { params: { error } });
+        return res.status(401).send( `Failed to get all orders`);
+
+    }
+});
+
+
+
+/**** app routes *****/
 
 orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
     const { user } = req;
-    const {
-        orderProducts, deliveryAddress, deliveryOption,
-        sourceId, metadata
-    } = req.body;
+    const { orderProducts, deliveryAddress, deliveryOption, sourceId, metadata } = req.body;
 
+    // TODO : validate orderProducts, address, deliveryOption & validate that all product are in stock
+    if (!validation_orderPost_reqBody(orderProducts, deliveryAddress, deliveryOption, sourceId, metadata)) {
+        console.log('request body validation failed.');
+        return res.status(401).send('request body validation failed.');
+    }
 
-
-    // TODO : validate orderProducts, address, deliveryOption
-    // TODO : validate that all product are in stock
-    const deliveryFeed = (deliveryOption == 'standard')? 5 : 10;
-    const deliveryAddressDetails = {
-        deliveryAddress,
-        deliveryOption,
-        deliveryFeed
-    };
-    console.log('deliveryAddressDetails: ', JSON.stringify(deliveryAddressDetails, undefined, 2));
-
+    const deliveryFeed = (deliveryOption == 'standard') ? 5 : 10;
+    const deliveryAddressDetails = { deliveryAddress, deliveryOption, deliveryFeed };
     /**
-     * validate that the calculation of total charge on the server same as 
-     * client side calculation.
+     * validate that the calculation of total charge on the server same as client side calculation.
      */
     const totalCharge = await Order.calcOrderTotal(orderProducts, deliveryFeed);
-    console.log('totalCharge: ', totalCharge);
     if (totalCharge != metadata.total) {
         console.log('server calculation of total charge dif from client side calculation.');
         return res.status(401).send('server calculation of total charge dif from client side calculation.');
@@ -51,56 +87,43 @@ orderRoute.post('/', authenticate, async (req, res) => {
     // retrive the stripe-customer object corresponds to the user
     let customer;
     try {
-        const customerId = user.paymentMethods.customerId;
+        const { customerId } = user.paymentMethods;
         customer = await stripe.customers.retrieve(customerId);
     } catch (error) {
         console.log(error);
         return res.status(401).send(error);
     }
-    console.log('customer: ', JSON.stringify(customer, undefined, 2));
-    let sourceForCharge;
-    if (!sourceId) {
-        sourceForCharge = customer.default_source;
-    } else {
-        sourceForCharge = 
-            customer.sources.data.some(source => source.id == sourceId) ? 
-                sourceId : 
-                undefined;
-    }
-    console.log('sourceForCharge: ', sourceForCharge);
 
+    const sourceForCharge = getSourceForCharge(customer, sourceId);
+    if (!sourceForCharge) {
+        console.log('sourceForCharge not defined.');
+        return res.status(401).send('sourceForCharge not defined.');
+    }
 
     /**
      * create the charge of this order.
      */
     let charge;
     try {
-        charge = await stripe.charges.create({
-            amount: totalCharge,
-            currency: "usd",
-            source: sourceForCharge,
-            customer: customer.id,
-            description: `Charge for ${user.authData.email}.`
-        });
+        const chargeMetadata = {
+            userEmail: user.authData.email, orderProducts, deliveryOption
+        };
+        charge = await createCharge(customer.id, sourceForCharge, totalCharge, undefined, chargeMetadata)
     } catch (error) {
         console.log(error);
         return res.status(401).send(error);
     }
 
     /**
-     * create an order instance with all the charge data.
+     *  create an order instance with all the charge data.
+     *  remove from the user's cart the purchesed products.
      */
     let order;
     try {
         order = await Order({
-            user: {
-                userId: user._id,
-                email: user.authData.email
-            },
-            orderProducts,
-            total: totalCharge,
-            deliveryAddressDetails,
-            paid: true,
+            user: { userId: user._id, email: user.authData.email },
+            orderProducts, deliveryAddressDetails,
+            total: totalCharge, paid: true,
             paymentDetails: {
                 paymentMethod: 'credit-card',
                 sourceId: sourceForCharge,
@@ -109,6 +132,7 @@ orderRoute.post('/', authenticate, async (req, res) => {
         });
         console.log(order);
         await order.save();
+        await removeOrderdProductsFromUserCart(user, orderProducts);
     } catch (error) {
         console.log(error);
         return res.status(401).send(error);
@@ -129,19 +153,64 @@ orderRoute.post('/', authenticate, async (req, res) => {
     }
 
     try {
-        return res.send({ data: {
-            user,
-            order,
-            authValue: req.authValue
-        }});
+        return res.send({ data: { user, order, authValue: req.authValue } });
     } catch (error) {
         console.log(error);
         return res.status(401).send(error);
     }
-
-    /*
-    */
 });
+
+
+function validation_orderPost_reqBody(orderProducts, deliveryAddress, deliveryOption, sourceId, metadata) {
+    return true;
+}
+
+function getSourceForCharge(customerObject, clientSideSourceId) {
+    let sourceForCharge;
+    if (!clientSideSourceId) {
+        sourceForCharge = customerObject.default_source;
+    } else {
+        sourceForCharge =
+            customerObject.sources.data.some(source => source.id == clientSideSourceId) ?
+                clientSideSourceId :
+                undefined;
+    }
+    return sourceForCharge;
+}
+
+async function createCharge(customerId, sourceId, amount, currency = DEFAULT_CURRENCY, metadata) {
+    const charge = await stripe.charges.create({
+        amount,
+        currency,
+        source: sourceId,
+        customer: customerId,
+        metadata
+        // description: `Charge for ${user.authData.email}.`
+    });
+    return charge;
+}
+
+async function removeOrderdProductsFromUserCart(user, orderdProducts) {
+    if (ValidationService.isObjectNullOrUndefined(user) ||
+        ValidationService.isObjectNullOrUndefined(orderdProducts)) {
+        return;
+    }
+
+    const userId = user._id
+    const orderdProductsId = orderdProducts.map(orderProduct => orderProduct.productId);
+    try {
+        const cart = await Cart.findOneAndUpdate(
+            { ownerId: userId },
+            {
+                $pull:
+                    { contant: { $elemMatch: { productId: { $in: orderdProductsId } } } }
+            }
+        );
+        console.log('updated cart: ', cart);
+    } catch (error) {
+        console.log(error);
+    }
+}
 
 module.exports = {
     orderRoute

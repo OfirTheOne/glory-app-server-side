@@ -2,7 +2,7 @@
 const usersRoute = require('express').Router();
 const _ = require('lodash');
 const validator = require('validator');
-const { ValidationService } = require('../../utils/custom-validation-service/validation.servic')
+const { ValidationService } = require('../../utils/custom-validation-service/validation.service')
 
 const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 

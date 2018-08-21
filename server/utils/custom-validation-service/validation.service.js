@@ -34,7 +34,7 @@ class ValidationService {
     }
 
 
-    // patters
+    // patterns
     static isStringTrimAlpaWordsSeries(str) {
         if(typeof str === 'string') {
             return alphaAndSpaceRegex.test(str);

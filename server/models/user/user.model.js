@@ -7,7 +7,7 @@ const { OAuth2Client } = require('google-auth-library');
 const { FB } = require('fb');
 
 const _ = require('lodash');
-const {ValidationService} = require('../../utils/custom-validation-service/validation.servic'); 
+const {ValidationService} = require('../../utils/custom-validation-service/validation.service'); 
 
 let { UserSchema, USER_PROVIDERS } = require('./user.schema');
 
