@@ -7,8 +7,7 @@ const { ValidationService } = require('../../utils/custom-validation-service/val
 const { Logger, LogStream } = require('../../utils/logger-service/logger.service');
 
 // mongoose models
-const { User } = require('../../models/user/user.model');
-const { Cart } = require('../../models/cart/cart.model');
+const { User, Cart } = require('../../models');
 
 // middleware
 const { authenticate } = require('../../middleware/authenticate');

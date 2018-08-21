@@ -25,13 +25,13 @@ const DEFAULT_CURRENCY = "usd";
 orderRoute.get('/', async (req, res) => {
     try {
         const orders = await Order.find({});
-        logger.info(`GET: /orders`, `Exit`, {params: orders});
+        logger.info(`GET: /orders`, `Exit`, { params: orders });
         return res.send({ data: orders });
 
     } catch (error) {
         console.log(error);
         logger.error(`GET: /orders`, `Exit - Failed to get all orders`, { params: { error } });
-        return res.status(401).send( `Failed to get all orders`);
+        return res.status(401).send(`Failed to get all orders`);
 
     }
 });
@@ -42,7 +42,7 @@ orderRoute.get('/:uid', async (req, res) => {
     try {
         const userId = req.params.id;
         if (!ObjectId.isValid(userId)) {
-            return res.status(401).send( `user id not valid.`);
+            return res.status(401).send(`user id not valid.`);
         }
 
         const userOrders = await Order.find({ 'user.userId': userId });
@@ -52,7 +52,7 @@ orderRoute.get('/:uid', async (req, res) => {
     } catch (error) {
         console.log(error);
         logger.error(`GET: /orders/:uid`, `Exit - Failed to get all orders`, { params: { error } });
-        return res.status(401).send( `Failed to get all orders`);
+        return res.status(401).send(`Failed to get all orders`);
 
     }
 });
@@ -197,13 +197,38 @@ async function removeOrderdProductsFromUserCart(user, orderdProducts) {
     }
 
     const userId = user._id
-    const orderdProductsId = orderdProducts.map(orderProduct => orderProduct.productId);
+    ordersMap = orderdProducts.reduce((map, orderProduct) => {
+        map[orderProduct.productId] = orderProduct;
+        return map;
+    }, {});
+
+    const orderdProductsIds = Object.keys(ordersMap);
+
     try {
-        const cart = await Cart.findOneAndUpdate(
-            { ownerId: userId },
+        const bulk = db.users.initializeOrderedBulkOp();
+        const cart = await Cart.findOne({ ownerId: userId });
+
+        await cart.update({
+            $pull: {
+                contant: {
+                    $elemMatch: {
+                        productId: { $in: orderdProductsIds },
+                        amount: 1
+                    }
+                }
+            }
+        });
+        await cart.update(
             {
-                $pull:
-                    { contant: { $elemMatch: { productId: { $in: orderdProductsId } } } }
+                contant: {
+                    $elemMatch: {
+                        productId: { $in: orderdProductsIds },
+                        amount: 1
+                    }
+                }
+            },
+            {
+                $inc: {  "contant.$[].amount": -1 }
             }
         );
         console.log('updated cart: ', cart);
