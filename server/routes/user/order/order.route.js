@@ -25,7 +25,7 @@ const DEFAULT_CURRENCY = "usd";
 orderRoute.get('/', async (req, res) => {
     try {
         const orders = await Order.find({});
-        logger.info(`GET: /orders`, `Exit`);
+        logger.info(`GET: /orders`, `Exit`, {params: orders});
         return res.send({ data: orders });
 
     } catch (error) {
