@@ -106,7 +106,9 @@ orderRoute.post('/', authenticate, async (req, res) => {
     let charge;
     try {
         const chargeMetadata = {
-            userEmail: user.authData.email, orderProducts, deliveryOption
+            userEmail: user.authData.email, 
+            ...deliveryAddress, 
+            deliveryOption
         };
         charge = await createCharge(customer.id, sourceForCharge, totalCharge, undefined, chargeMetadata)
     } catch (error) {
