@@ -193,6 +193,7 @@ async function createCharge(customerId, sourceId, amount, currency = DEFAULT_CUR
 }
 
 async function removeOrderdProductsFromUserCart(user, orderdProducts) {
+    console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - ENTER');
     if (ValidationService.isObjectNullOrUndefined(user) ||
         ValidationService.isObjectNullOrUndefined(orderdProducts)) {
         return;
@@ -207,10 +208,9 @@ async function removeOrderdProductsFromUserCart(user, orderdProducts) {
     const orderdProductsIds = Object.keys(ordersMap);
 
     try {
-        const bulk = db.users.initializeOrderedBulkOp();
         const cart = await Cart.findOne({ ownerId: userId });
 
-        await cart.update({
+        await cart.update({},{
             $pull: {
                 contant: {
                     $elemMatch: {
@@ -220,21 +220,20 @@ async function removeOrderdProductsFromUserCart(user, orderdProducts) {
                 }
             }
         });
-        await cart.update(
-            {
-                contant: {
-                    $elemMatch: {
-                        productId: { $in: orderdProductsIds },
-                        amount: 1
-                    }
+        await cart.update({
+            contant: {
+                $elemMatch: {
+                    productId: { $in: orderdProductsIds },
                 }
-            },
-            {
-                $inc: {  "contant.$[].amount": -1 }
             }
-        );
+        },{
+            $inc: {  "contant.$[].amount": -1 }
+        });
         console.log('updated cart: ', cart);
+    console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - EXIT');
+
     } catch (error) {
+        console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - ERROR');
         console.log(error);
     }
 }
