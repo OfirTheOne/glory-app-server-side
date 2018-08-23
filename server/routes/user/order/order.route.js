@@ -61,6 +61,26 @@ orderRoute.get('/:uid', async (req, res) => {
 
 /**** app routes *****/
 
+
+orderRoute.get('/', authenticate,  async (req, res) => {
+    logger.info(`GET: /orders`, `Enter`);
+
+    try {
+        const userId = req.user._id;
+
+        const userOrders = await Order.find({ 'user.userId': userId });
+        logger.info(`GET: /orders`, `Exit`);
+        return res.send({ data: userOrders });
+
+    } catch (error) {
+        console.log(error);
+        logger.error(`GET: /orders`, `Exit - Failed to get all orders`, { params: { error } });
+        return res.status(401).send(`Failed to get all orders`);
+
+    }
+});
+
+
 orderRoute.post('/', authenticate, async (req, res) => {
 
     /******* - EXTRACT PARAMETERS STEP - *******/
