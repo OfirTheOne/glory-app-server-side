@@ -26,12 +26,34 @@ CartSchema.methods.removeProductAndUpdate = async function (pid, size) {
         cartProduct.amount--;
     } else {
         cart.contant.splice(productIndex, 1);
-        }
+    }
     try {
         await cart.save()
     } catch (e) {
         throw e;
     }
+
+    /*
+    mongo operations
+
+        await cart.update({},{
+            $pull: {
+                contant: {
+                    $elemMatch: {
+                        productId: { $in: orderdProductsIds },
+                        amount: 1
+                    }
+                }
+            }
+        });
+        // or
+        await cart.update({},{
+            $inc: {  "contant.$[element].amount": -1  }
+        },
+        { arrayFilters: [ { 'element.productId': productsId } ]});
+        console.log('updated cart: ', cart);
+    
+    */
 }
 
 
@@ -61,6 +83,25 @@ CartSchema.methods.addProductAndUpdate = async function (pid, size) {
         throw e;
     }
 }
+
+CartSchema.methods.emptyCart = async function () {
+
+    const cart = this;
+    try {
+        const updatedCart = await cart.update(
+            {},
+            { $pullAll: { contant: [] } },
+            { new: true }
+        );
+        console.log(updatedCart);
+        return updatedCart;
+        
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
 
 
 const Cart = mongoose.model('Cart', CartSchema);

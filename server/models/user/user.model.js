@@ -9,6 +9,8 @@ const { FB } = require('fb');
 const _ = require('lodash');
 const {ValidationService} = require('../../utils/custom-validation-service/validation.service'); 
 
+const { Cart } = require('../index');
+
 let { UserSchema, USER_PROVIDERS } = require('./user.schema');
 
 // validate custom jwt related config variable 
@@ -114,6 +116,8 @@ const canGenerateToIP = (tokens, deviceIp) => {
 };
 
 
+
+
 UserSchema.methods.removeToken = async function (token) {
     console.log(`removeToken : token ${token}`)
     const user = this;
@@ -173,6 +177,8 @@ UserSchema.statics.findByCredentials = async function (email, password) {
         throw new Error('password failed.');
     }
 };
+
+
 
 
 UserSchema.methods.setUserData = async function (data) {
@@ -382,6 +388,34 @@ UserSchema.statics.verifyFacebookToken = async function (token) {
 };
 
 
+
+UserSchema.methods.emptyCart = async function() {
+    const user = this;
+    const userId = user._id;
+
+    let cart;
+    try {
+        const cart = await Cart.findOne({ownerId: userId});
+        console.log(cart);
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+
+    if(!cart) {
+        console.log('error finding user cart.');
+        throw 'error finding user cart.';
+    }
+
+    try {
+        const updatedCart = await cart.emptyCart();
+        console.log(updatedCart);
+        return updatedCart;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
 
 
 /**

@@ -134,7 +134,7 @@ orderRoute.post('/', authenticate, async (req, res) => {
         });
         console.log(order);
         await order.save();
-        await removeOrderdProductsFromUserCart(user, orderProducts);
+        await user.emptyCart();
     } catch (error) {
         console.log(error);
         return res.status(401).send(error);
@@ -192,51 +192,6 @@ async function createCharge(customerId, sourceId, amount, currency = DEFAULT_CUR
     return charge;
 }
 
-async function removeOrderdProductsFromUserCart(user, orderdProducts) {
-    console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - ENTER');
-    if (ValidationService.isObjectNullOrUndefined(user) ||
-        ValidationService.isObjectNullOrUndefined(orderdProducts)) {
-        return;
-    }
-
-    const userId = user._id
-    ordersMap = orderdProducts.reduce((map, orderProduct) => {
-        map[orderProduct.productId] = orderProduct;
-        return map;
-    }, {});
-
-    const orderdProductsIds = Object.keys(ordersMap);
-
-    try {
-        const cart = await Cart.findOne({ ownerId: userId });
-
-        await cart.update({},{
-            $pull: {
-                contant: {
-                    $elemMatch: {
-                        productId: { $in: orderdProductsIds },
-                        amount: 1
-                    }
-                }
-            }
-        });
-        await cart.update({
-            contant: {
-                $elemMatch: {
-                    productId: { $in: orderdProductsIds },
-                }
-            }
-        },{
-            $inc: {  "contant.$[].amount": -1 }
-        });
-        console.log('updated cart: ', cart);
-    console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - EXIT');
-
-    } catch (error) {
-        console.log('removeOrderdProductsFromUserCart(user, orderdProducts) - ERROR');
-        console.log(error);
-    }
-}
 
 module.exports = {
     orderRoute
