@@ -90,7 +90,7 @@ CartSchema.methods.emptyCart = async function () {
     try {
         const updatedCart = await cart.update(
             {},
-            { $pullAll: { contant: [] } },
+            { $set: { contant: [] } },
             { new: true }
         );
         console.log(updatedCart);
