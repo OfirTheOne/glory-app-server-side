@@ -395,7 +395,7 @@ UserSchema.methods.emptyCart = async function() {
 
     let cart;
     try {
-        const cart = await Cart.findOne({ownerId: userId});
+        cart = await Cart.findOne({ownerId: userId});
         console.log(cart);
     } catch (error) {
         console.log(error);
