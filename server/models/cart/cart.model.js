@@ -34,24 +34,46 @@ CartSchema.methods.removeProductAndUpdate = async function (pid, size) {
     }
 
     /*
-    mongo operations
-
-        await cart.update({},{
-            $pull: {
-                contant: {
-                    $elemMatch: {
-                        productId: { $in: orderdProductsIds },
-                        amount: 1
+    // mongo operations
+    const productIndex = cart.findProductIndex(pid, size);
+    if (productIndex === -1) {
+        throw new Error('product not exists in the cart.');
+    }
+    let cartProduct = cart.contant[productIndex];
+    if (cartProduct.amount > 1) {
+        try {
+            await cart.update({
+                $pull: {
+                    contant: {
+                        $elemMatch: {
+                            productId: { $in: orderdProductsIds },
+                            amount: 1
+                        }
                     }
                 }
-            }
-        });
+            }, { new: true });
+
+        } catch (error) {
+
+        }
+
+    } else {
         // or
-        await cart.update({},{
-            $inc: {  "contant.$[element].amount": -1  }
-        },
-        { arrayFilters: [ { 'element.productId': productsId } ]});
-        console.log('updated cart: ', cart);
+        try {
+            await cart.update({
+                $inc: { "contant.$[element].amount": -1 }
+            }, {
+                    arrayFilters: [{ 'element.productId': productsId }],
+                    new: true
+                }
+            );
+            console.log('updated cart: ', cart);
+        } catch (error) {
+
+        }
+
+    }
+       
     
     */
 }
@@ -85,17 +107,16 @@ CartSchema.methods.addProductAndUpdate = async function (pid, size) {
 }
 
 CartSchema.methods.emptyCart = async function () {
-
+    console.log('cart.emptyCart()');
     const cart = this;
     try {
         const updatedCart = await cart.update(
-            {},
             { $set: { contant: [] } },
             { new: true }
         );
         console.log(updatedCart);
         return updatedCart;
-        
+
     } catch (error) {
         console.log(error);
         throw error;
