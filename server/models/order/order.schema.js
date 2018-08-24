@@ -63,6 +63,10 @@ const OrderSchema = new mongoose.Schema({
         deliveryFeed: {
             type: Number
         }
+    }, 
+    date: { 
+        type: Number,
+        default: new Date().getTime()
     },
     paid: {
         type: Boolean,

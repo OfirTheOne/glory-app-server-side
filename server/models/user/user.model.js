@@ -9,7 +9,7 @@ const { FB } = require('fb');
 const _ = require('lodash');
 const {ValidationService} = require('../../utils/custom-validation-service/validation.service'); 
 
-const { Cart } = require('../index');
+const { Cart } = require('../cart/cart.model');
 
 let { UserSchema, USER_PROVIDERS } = require('./user.schema');
 
